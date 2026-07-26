@@ -190,3 +190,35 @@ export const KEEP = {
   /** How long the result is held on screen before the next shot. */
   settle: 1.6,
 } as const
+
+/**
+ * "Course aux étoiles" — the runner mini-game.
+ *
+ * The runner stays near the camera and the world comes to them, which keeps the
+ * character large and readable the whole time instead of shrinking into the
+ * distance.
+ */
+export const RUN = {
+  /** Length of one run, seconds. Short enough to hold a six-year-old. */
+  duration: 24,
+  /** How fast the world flows past. */
+  speed: 9,
+  /** Where the runner stands. */
+  playerZ: 1.5,
+  /** Where stars appear, and where they are finally dropped. */
+  spawnZ: -30,
+  despawnZ: 5,
+  firstSpawn: 0.8,
+  spawnEvery: 0.55,
+  /** Every Nth star is golden. */
+  bigEvery: 7,
+  /** How far off centre a star can appear. */
+  laneHalfWidth: 3.2,
+  /** Sideways and lengthwise catch tolerance. Generous on purpose. */
+  pickupRadius: 1.0,
+  pickupDepth: 1.1,
+  /** Runner's top sideways speed. */
+  playerSpeed: 7.5,
+  twoStarScore: 16,
+  threeStarScore: 28,
+} as const
