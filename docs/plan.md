@@ -183,16 +183,8 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   ventrales, épines dorsales, queue segmentée à pointe. Au passage, le composant
   s'appelle désormais `Dragon.tsx` et non plus `Keeper.tsx` : il joue le gardien
   *et* le tireur, le nommer d'après un seul de ses rôles induisait en erreur.
-  L'ancienne version, pour mémoire :
-
-- ⬜ ~~**Refaire le dragon.**~~ Il était franchement moche : c'est une grosse sphère
-  verte avec des ailes-galets et un museau en cône, sans cou, sans silhouette,
-  et il se lit comme un blob dès qu'il s'éloigne. Il joue pourtant deux rôles
-  visibles (gardien en mode tir, tireur en mode gardienne), donc il mérite un
-  vrai passage : silhouette lisible de loin, cou et tête distincts, ailes
-  membranées plutôt que des sphères aplaties, pattes visibles, queue segmentée,
-  expression amicale (il doit rester le gentil du jeu). Contrainte inchangée :
-  **primitives uniquement, aucun fichier .glb**.
+  *Pour mémoire, l'état d'avant :* une grosse sphère verte, des ailes-galets et
+  un museau en cône — sans cou, sans silhouette, illisible dès qu'il s'éloignait.
 
 **Phase 4 — Fête finale (2 j)**
 Casse-tour, Coupe du Royaume + trophée, PWA (manifest + service worker,
