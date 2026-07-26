@@ -12,16 +12,26 @@ import { PITCH } from '../game/constants'
  * offset from it.
  */
 
-/** Half-width the camera fits across the screen — see Scene.tsx FitCamera. */
-const VISIBLE_HALF_WIDTH = PITCH.goalHalfWidth + 1.0
-
-export function KeepOverlay({ onAim, hint }: { onAim: (x: number) => void; hint: string }) {
+export function KeepOverlay({
+  onAim,
+  hint,
+  halfWidth = PITCH.goalHalfWidth + 1.0,
+}: {
+  onAim: (x: number) => void
+  hint: string
+  /**
+   * World half-width the full screen maps onto. It defaults to what the camera
+   * shows at the goal line; the runner passes its own narrower lane so the
+   * character still ends up under the finger.
+   */
+  halfWidth?: number
+}) {
   const dragging = useRef(false)
   const [touched, setTouched] = useState(false)
 
   function aimFrom(clientX: number) {
     const fraction = clientX / Math.max(1, window.innerWidth)
-    onAim((fraction - 0.5) * 2 * VISIBLE_HALF_WIDTH)
+    onAim((fraction - 0.5) * 2 * halfWidth)
   }
 
   function down(e: ReactPointerEvent<HTMLDivElement>) {

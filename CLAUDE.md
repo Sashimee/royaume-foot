@@ -40,7 +40,7 @@ src/
 ├── ui/        # DOM overlay: HUD, wardrobe, result. Tailwind, not 3D.
 ├── store/     # zustand: gameStore (round) + saveStore (persisted)
 ├── audio/     # Web Audio synthesis, no files
-├── data/      # roster (characters, balls) and stadiums — all plain data
+├── data/      # roster (characters, balls), stadiums, mascots — all plain data
 └── i18n/      # six flat key→string maps, English fallback, no interpolation
 ```
 
@@ -101,6 +101,14 @@ texture cache is keyed on its colours (a key of just "grass" hands the beach the
 prairie's stripes), and the blob shadow takes a tint, because a green shadow on
 snow reads as a sticker.
 
+## Mascots
+
+`data/mascots.ts` is company and nothing else — a mascot never touches the
+rules. It trails the player with a lag rather than sitting at a fixed offset: a
+pet welded to the character reads as a prop, one that catches up reads as alive.
+It clamps itself to `visibleHalfWidthAt(z)`, because following a player who is
+themselves near the edge of frame walks the pet straight out of shot.
+
 ## Rules that are load-bearing
 
 - **`src/game/*` must never import three.** That separation is what lets the
@@ -129,9 +137,11 @@ snow reads as a sticker.
 - **Check what is actually on screen before placing anything.** The camera
   frustum is fitted to the goal *at the goal line*, so an object nearer the
   camera has proportionally less room: `visibleHalfWidthAt(z)` in
-  `game/constants.ts` gives the real limit, and the keeper-mode shooter is
-  asserted against it. Placing him at the goal's own half-width clipped him off
-  the side of the frame.
+  `game/constants.ts` gives the real limit. This has now bitten three times —
+  the keeper-mode shooter was clipped off the side, the runner's lane was wider
+  than the frame so the runner could sprint out of shot entirely, and the
+  mascot followed them out. All three are asserted in tests. **Anything you
+  place or move sideways must be checked against it.**
 - **Portrait framing.** The vertical field of view is over twice the horizontal
   one on a phone. `Scene.tsx` derives fov from the horizontal angle the goal
   needs; the castle exists to fill the band above the goal with something other

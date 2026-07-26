@@ -11,9 +11,11 @@ import type { KeeperState } from '../game/keeper'
 import { evaluateCrossing } from '../game/scoring'
 import type { ShotOutcome } from '../game/scoring'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Mascot as MascotData } from '../data/mascots'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
 import { Dragon } from './Dragon'
 import { Character } from './Character'
+import { Mascot } from './Mascot'
 import type { CharacterMode } from './characterRig'
 
 /** How long the ball is left on screen after a shot is judged. */
@@ -42,6 +44,7 @@ export function Match({
   character,
   ballSkin,
   shadowColour,
+  mascot,
   frozen,
   cheerUntil,
   onOutcome,
@@ -50,6 +53,7 @@ export function Match({
   character: CharacterData
   ballSkin: BallSkin
   shadowColour: string
+  mascot: MascotData
   /** True once the round is over — no further shots are accepted. */
   frozen: boolean
   cheerUntil: RefObject<number>
@@ -211,6 +215,8 @@ export function Match({
         <Character data={character} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
       <Dragon ref={keeperRef} />
+      <Mascot data={mascot} home={[1.7, 0, PITCH.ballStart.z - 1.4]} />
+
       <Ball skin={ballSkin} ref={ballRef} />
       <BlobShadow ref={shadowRef} colour={shadowColour} />
       <BallTrail history={trail} />

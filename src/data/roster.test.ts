@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BALLS, CHARACTERS, KNIGHTS, PRINCESSES, characterById, nextUnlock } from './roster'
 import { STADIUMS, stadiumById } from './stadiums'
+import { MASCOTS, mascotById } from './mascots'
 
 describe('roster', () => {
   it('offers both kinds of character', () => {
@@ -38,7 +39,7 @@ describe('roster', () => {
   it('has nothing left to unlock once every threshold is passed', () => {
     // Every kind of unlockable counts, stadiums included — the teaser reads
     // from all of them.
-    const highest = Math.max(...[...CHARACTERS, ...BALLS, ...STADIUMS].map((i) => i.unlockStars))
+    const highest = Math.max(...[...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS].map((i) => i.unlockStars))
     expect(nextUnlock(highest)).toBeNull()
   })
 })
@@ -73,5 +74,27 @@ describe('stadiums', () => {
     // while a child still has something to earn.
     const highestCharacterOrBall = Math.max(...[...CHARACTERS, ...BALLS].map((i) => i.unlockStars))
     expect(nextUnlock(highestCharacterOrBall)).not.toBeNull()
+  })
+})
+
+describe('mascots', () => {
+  it('gives a free companion from the first launch', () => {
+    expect(MASCOTS.filter((m) => m.unlockStars === 0).length).toBeGreaterThan(0)
+  })
+
+  it('has unique ids', () => {
+    const ids = MASCOTS.map((m) => m.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('falls back to a real mascot for an unknown id', () => {
+    expect(mascotById('nobody').unlockStars).toBe(0)
+  })
+
+  it('draws every mascot kind', () => {
+    // A kind with no branch in Extras() renders a bare body, which looks like a
+    // bug rather than like a pet.
+    const kinds = new Set(MASCOTS.map((m) => m.kind))
+    expect(kinds.size).toBe(MASCOTS.length)
   })
 })

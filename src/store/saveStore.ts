@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { BALLS, CHARACTERS } from '../data/roster'
 import { STADIUMS } from '../data/stadiums'
+import { MASCOTS } from '../data/mascots'
 
 const KEY = 'royaume-foot:save:v1'
 
@@ -10,11 +11,13 @@ export interface SaveState {
   characterId: string
   ballId: string
   stadiumId: string
+  mascotId: string
   muted: boolean
   addStars: (n: number) => void
   setCharacter: (id: string) => void
   setBall: (id: string) => void
   setStadium: (id: string) => void
+  setMascot: (id: string) => void
   toggleMute: () => void
 }
 
@@ -23,6 +26,7 @@ interface Persisted {
   characterId: string
   ballId: string
   stadiumId: string
+  mascotId: string
   muted: boolean
 }
 
@@ -32,6 +36,7 @@ function load(): Persisted {
     characterId: CHARACTERS[0].id,
     ballId: BALLS[0].id,
     stadiumId: STADIUMS[0].id,
+    mascotId: MASCOTS[0].id,
     muted: false,
   }
   try {
@@ -50,6 +55,7 @@ function load(): Persisted {
         : fallback.characterId,
       ballId: BALLS.some((b) => b.id === parsed.ballId) ? parsed.ballId! : fallback.ballId,
       stadiumId: STADIUMS.some((s) => s.id === parsed.stadiumId) ? parsed.stadiumId! : fallback.stadiumId,
+      mascotId: MASCOTS.some((m) => m.id === parsed.mascotId) ? parsed.mascotId! : fallback.mascotId,
       muted: parsed.muted === true,
     }
   } catch {
@@ -84,6 +90,10 @@ export const useSave = create<SaveState>((set, get) => ({
     set({ stadiumId: id })
     save(get)
   },
+  setMascot: (id) => {
+    set({ mascotId: id })
+    save(get)
+  },
   toggleMute: () => {
     set({ muted: !get().muted })
     save(get)
@@ -91,8 +101,8 @@ export const useSave = create<SaveState>((set, get) => ({
 }))
 
 function save(get: () => SaveState) {
-  const { stars, characterId, ballId, stadiumId, muted } = get()
-  persist({ stars, characterId, ballId, stadiumId, muted })
+  const { stars, characterId, ballId, stadiumId, mascotId, muted } = get()
+  persist({ stars, characterId, ballId, stadiumId, mascotId, muted })
 }
 
 /**

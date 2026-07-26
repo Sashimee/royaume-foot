@@ -164,7 +164,9 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 - ✅ **4 stades** (prairie, plage, royaume des glaces, nuit étoilée) : une
   palette par stade, aucune géométrie nouvelle, déblocage par étoiles et
   sélection dans le vestiaire.
-- ⬜ Mascottes, carte du royaume.
+- ✅ **4 mascottes** (chat, lapin, licorne, dragonnet) : un compagnon qui suit
+  le personnage avec du retard dans les trois modes, débloqué par étoiles.
+- ⬜ Carte du royaume.
 
 > **Écart :** un seul des deux mini-jeux prévus. Livrer le second à moitié aurait
 > coûté la qualité du premier ; la trajectoire du ballon en mode gardienne est

@@ -6,9 +6,11 @@ import { KEEP, PITCH } from '../game/constants'
 import type { Attempt } from '../game/keeperGame'
 import { ballPosAt, isSave, makeAttempt, seededRandom, stepPlayerKeeper } from '../game/keeperGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Mascot as MascotData } from '../data/mascots'
 import { Ball, BlobShadow } from './Ball'
 import { Dragon } from './Dragon'
 import { Character } from './Character'
+import { Mascot } from './Mascot'
 import type { CharacterMode } from './characterRig'
 
 export interface KeepHandle {
@@ -39,6 +41,7 @@ export function KeepMatch({
   character,
   ballSkin,
   shadowColour,
+  mascot,
   frozen,
   cheerUntil,
   onResult,
@@ -47,6 +50,7 @@ export function KeepMatch({
   character: CharacterData
   ballSkin: BallSkin
   shadowColour: string
+  mascot: MascotData
   frozen: boolean
   cheerUntil: RefObject<number>
   onResult: (saved: boolean) => void
@@ -178,6 +182,8 @@ export function KeepMatch({
       <group ref={shooterRef} rotation={[0, Math.PI, 0]}>
         <Dragon />
       </group>
+
+      <Mascot data={mascot} follow={playerRef} offset={[1.5, 0, 0.9]} />
 
       <Ball skin={ballSkin} ref={ballRef} />
       <BlobShadow ref={shadowRef} colour={shadowColour} />

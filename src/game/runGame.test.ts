@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { RUN } from './constants'
+import { RUN, visibleHalfWidthAt } from './constants'
 import { makeRun, runIsOver, runProgress, starsForRun, stepRun, stepRunner } from './runGame'
 import type { RunState } from './runGame'
 
@@ -140,5 +140,15 @@ describe('difficulty balance (running)', () => {
   it('a child who never moves is not shut out of a reward', () => {
     const s = playRun(() => 0)
     expect(starsForRun(s.collected, s.bigCollected)).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('framing', () => {
+  it('keeps the whole lane on screen', () => {
+    // Regression: the lane was wider than the camera shows at the runner's
+    // distance, so the runner could sprint off the side of the frame — which a
+    // child experiences as the game losing them.
+    const room = visibleHalfWidthAt(RUN.playerZ)
+    expect(RUN.laneHalfWidth + 0.5).toBeLessThan(room)
   })
 })

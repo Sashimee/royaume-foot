@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef } from 'react'
 import confetti from 'canvas-confetti'
 import { sfx } from '../audio/sfx'
-import { ROUND } from '../game/constants'
+import { ROUND, RUN } from '../game/constants'
 import type { ShotOutcome } from '../game/scoring'
 import type { GameMode } from '../store/gameStore'
 import { shoutKeyFor, useGame } from '../store/gameStore'
 import { useSave } from '../store/saveStore'
 import { ballById, characterById } from '../data/roster'
 import { stadiumById } from '../data/stadiums'
+import { mascotById } from '../data/mascots'
 import { useT } from '../i18n/useLang'
 import { Scene } from '../three/Scene'
 import { Pitch } from '../three/Pitch'
@@ -34,6 +35,7 @@ export function PlayScreen() {
   const character = useSave((s) => characterById(s.characterId))
   const ballSkin = useSave((s) => ballById(s.ballId))
   const stadium = useSave((s) => stadiumById(s.stadiumId))
+  const mascot = useSave((s) => mascotById(s.mascotId))
   const addStars = useSave((s) => s.addStars)
 
   const screen = useGame((s) => s.screen)
@@ -130,6 +132,7 @@ export function PlayScreen() {
             character={character}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
+            mascot={mascot}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onOutcome={handleOutcome}
@@ -140,6 +143,7 @@ export function PlayScreen() {
             character={character}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
+            mascot={mascot}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onResult={handleSave}
@@ -150,6 +154,7 @@ export function PlayScreen() {
             character={character}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
+            mascot={mascot}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onCollect={handleCollect}
@@ -171,7 +176,7 @@ export function PlayScreen() {
         ) : mode === 'keep' ? (
           <KeepOverlay hint={t('keep.hint')} onAim={(x) => keepApi.current?.aimAt(x)} />
         ) : (
-          <KeepOverlay hint={t('run.hint')} onAim={(x) => runApi.current?.aimAt(x)} />
+          <KeepOverlay hint={t('run.hint')} halfWidth={RUN.laneHalfWidth} onAim={(x) => runApi.current?.aimAt(x)} />
         ))}
 
       <Hud shotsTaken={shotsTaken} goals={goals} mode={mode} onQuit={goHome} progress={() => runApi.current?.progress() ?? 0} />

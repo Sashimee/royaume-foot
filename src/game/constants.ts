@@ -203,8 +203,12 @@ export const RUN = {
   duration: 24,
   /** How fast the world flows past. */
   speed: 9,
-  /** Where the runner stands. */
-  playerZ: 1.5,
+  /**
+   * Where the runner stands. Pushed away from the camera so the lane has room:
+   * the frustum is fitted to the goal at the goal line, so close to the camera
+   * there is far less width than the pitch suggests.
+   */
+  playerZ: -3,
   /** Where stars appear, and where they are finally dropped. */
   spawnZ: -30,
   despawnZ: 5,
@@ -212,8 +216,14 @@ export const RUN = {
   spawnEvery: 0.55,
   /** Every Nth star is golden. */
   bigEvery: 7,
-  /** How far off centre a star can appear. */
-  laneHalfWidth: 3.2,
+  /**
+   * How far off centre the runner and the stars can go.
+   *
+   * This must stay inside visibleHalfWidthAt(playerZ) — at 3.2 the runner
+   * literally ran off the side of the screen, which the child experiences as
+   * the game losing them. A test checks it.
+   */
+  laneHalfWidth: 2.2,
   /** Sideways and lengthwise catch tolerance. Generous on purpose. */
   pickupRadius: 1.0,
   pickupDepth: 1.1,

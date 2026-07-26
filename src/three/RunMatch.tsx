@@ -6,8 +6,10 @@ import { RUN } from '../game/constants'
 import { makeRun, runIsOver, stepRun } from '../game/runGame'
 import type { RunState } from '../game/runGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Mascot as MascotData } from '../data/mascots'
 import { Ball, BlobShadow } from './Ball'
 import { Character } from './Character'
+import { Mascot } from './Mascot'
 
 export interface RunHandle {
   /** Where along the lane the child wants the runner, in pitch units. */
@@ -33,6 +35,7 @@ export function RunMatch({
   character,
   ballSkin,
   shadowColour,
+  mascot,
   frozen,
   cheerUntil,
   onCollect,
@@ -42,6 +45,7 @@ export function RunMatch({
   character: CharacterData
   ballSkin: BallSkin
   shadowColour: string
+  mascot: MascotData
   frozen: boolean
   cheerUntil: RefObject<number>
   onCollect: (big: boolean) => void
@@ -145,6 +149,8 @@ export function RunMatch({
           />
         </group>
       </group>
+
+      <Mascot data={mascot} follow={playerRef} offset={[1.15, 0, 0.9]} />
 
       <Ball skin={ballSkin} ref={ballRef} />
       <BlobShadow ref={shadowRef} colour={shadowColour} />
