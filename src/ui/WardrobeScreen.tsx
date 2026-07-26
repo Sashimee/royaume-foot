@@ -75,7 +75,7 @@ export function WardrobeScreen() {
       </div>
 
       <div className="flex justify-center p-5 pb-8">
-        <BigButton onClick={startRound}>⚽ {t('wardrobe.play')}</BigButton>
+        <BigButton onClick={() => startRound('shoot')}>⚽ {t('wardrobe.play')}</BigButton>
       </div>
     </div>
   )

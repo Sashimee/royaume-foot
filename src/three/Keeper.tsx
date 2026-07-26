@@ -10,7 +10,7 @@ import * as THREE from 'three'
  * The match loop drives `ref.position.x` and the dive lean; the flapping and
  * blinking live here.
  */
-export function Keeper({ ref }: { ref: RefObject<THREE.Group | null> }) {
+export function Keeper({ ref }: { ref?: RefObject<THREE.Group | null> }) {
   const wingL = useRef<THREE.Group>(null)
   const wingR = useRef<THREE.Group>(null)
   const body = useRef<THREE.Group>(null)

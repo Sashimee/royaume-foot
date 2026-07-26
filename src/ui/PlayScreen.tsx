@@ -3,8 +3,8 @@ import confetti from 'canvas-confetti'
 import { sfx } from '../audio/sfx'
 import { ROUND } from '../game/constants'
 import type { ShotOutcome } from '../game/scoring'
-import { outcomeMessageKey } from '../game/scoring'
-import { useGame } from '../store/gameStore'
+import type { GameMode } from '../store/gameStore'
+import { shoutKeyFor, useGame } from '../store/gameStore'
 import { useSave } from '../store/saveStore'
 import { ballById, princessById } from '../data/roster'
 import { useT } from '../i18n/useLang'
@@ -13,7 +13,10 @@ import { Pitch } from '../three/Pitch'
 import { Crowd } from '../three/Crowd'
 import { Match } from '../three/Match'
 import type { MatchHandle } from '../three/Match'
+import { KeepMatch } from '../three/KeepMatch'
+import type { KeepHandle } from '../three/KeepMatch'
 import { AimOverlay } from './AimOverlay'
+import { KeepOverlay } from './KeepOverlay'
 import { ResultScreen } from './ResultScreen'
 import { IconButton } from './ui'
 
@@ -22,6 +25,7 @@ const SKY = 'linear-gradient(180deg, #7fd1ff 0%, #c9e9ff 45%, #ffe6f4 100%)'
 export function PlayScreen() {
   const t = useT()
   const api = useRef<MatchHandle | null>(null)
+  const keepApi = useRef<KeepHandle | null>(null)
   const cheerUntil = useRef(0)
 
   const princess = useSave((s) => princessById(s.princessId))
@@ -29,10 +33,12 @@ export function PlayScreen() {
   const addStars = useSave((s) => s.addStars)
 
   const screen = useGame((s) => s.screen)
+  const mode = useGame((s) => s.mode)
   const shotsTaken = useGame((s) => s.shotsTaken)
   const goals = useGame((s) => s.goals)
   const earnedStars = useGame((s) => s.earnedStars)
   const recordShot = useGame((s) => s.recordShot)
+  const recordSave = useGame((s) => s.recordSave)
   const finishRound = useGame((s) => s.finishRound)
   const goHome = useGame((s) => s.goHome)
 
@@ -58,6 +64,19 @@ export function PlayScreen() {
     [recordShot],
   )
 
+  const handleSave = useCallback(
+    (saved: boolean) => {
+      recordSave(saved)
+      if (saved) {
+        sfx.goal()
+        burst()
+      } else {
+        sfx.save()
+      }
+    },
+    [recordSave],
+  )
+
   // Let the last celebration play out before the result panel slides in.
   useEffect(() => {
     if (!roundOver || screen !== 'play' || awarded.current) return
@@ -79,30 +98,44 @@ export function PlayScreen() {
   return (
     <div className="absolute inset-0">
       <Scene sky={SKY}>
-        <Pitch />
+        <Pitch showTargets={mode === 'shoot'} />
         <Crowd cheerUntil={cheerUntil} />
-        <Match
-          api={api}
-          princess={princess}
-          ballSkin={ballSkin}
-          frozen={roundOver}
-          cheerUntil={cheerUntil}
-          onOutcome={handleOutcome}
-        />
+        {mode === 'shoot' ? (
+          <Match
+            api={api}
+            princess={princess}
+            ballSkin={ballSkin}
+            frozen={roundOver}
+            cheerUntil={cheerUntil}
+            onOutcome={handleOutcome}
+          />
+        ) : (
+          <KeepMatch
+            api={keepApi}
+            princess={princess}
+            ballSkin={ballSkin}
+            frozen={roundOver}
+            cheerUntil={cheerUntil}
+            onResult={handleSave}
+          />
+        )}
       </Scene>
 
-      {screen === 'play' && (
-        <AimOverlay
-          hint={t('play.hint')}
-          canShoot={() => api.current?.isReady() ?? false}
-          onShoot={(shot) => {
-            sfx.kick()
-            api.current?.shoot(shot)
-          }}
-        />
-      )}
+      {screen === 'play' &&
+        (mode === 'shoot' ? (
+          <AimOverlay
+            hint={t('play.hint')}
+            canShoot={() => api.current?.isReady() ?? false}
+            onShoot={(shot) => {
+              sfx.kick()
+              api.current?.shoot(shot)
+            }}
+          />
+        ) : (
+          <KeepOverlay hint={t('keep.hint')} onAim={(x) => keepApi.current?.aimAt(x)} />
+        ))}
 
-      <Hud shotsTaken={shotsTaken} goals={goals} onQuit={goHome} />
+      <Hud shotsTaken={shotsTaken} goals={goals} mode={mode} onQuit={goHome} />
       <Shout />
 
       {screen === 'result' && <ResultScreen />}
@@ -110,7 +143,17 @@ export function PlayScreen() {
   )
 }
 
-function Hud({ shotsTaken, goals, onQuit }: { shotsTaken: number; goals: number; onQuit: () => void }) {
+function Hud({
+  shotsTaken,
+  goals,
+  mode,
+  onQuit,
+}: {
+  shotsTaken: number
+  goals: number
+  mode: GameMode
+  onQuit: () => void
+}) {
   const stars = useSave((s) => s.stars)
 
   return (
@@ -132,7 +175,9 @@ function Hud({ shotsTaken, goals, onQuit }: { shotsTaken: number; goals: number;
           ))}
         </div>
         <div className="flex items-center gap-3 rounded-full bg-black/30 px-4 py-2 backdrop-blur-sm">
-          <span className="text-2xl font-black text-white">🥅 {goals}</span>
+          <span className="text-2xl font-black text-white">
+            {mode === 'shoot' ? '🥅' : '🧤'} {goals}
+          </span>
           <span className="text-2xl font-black text-yellow-200">⭐ {stars}</span>
         </div>
       </div>
@@ -161,8 +206,8 @@ function Shout() {
         key={shoutId}
         className="animate-pop-in text-center text-6xl font-black tracking-tight text-white drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]"
       >
-        {outcome === 'goal' ? '🎉 ' : ''}
-        {t(outcomeMessageKey(outcome))}
+        {outcome === 'goal' || outcome === 'saved' ? '🎉 ' : ''}
+        {t(shoutKeyFor(outcome))}
       </p>
     </div>
   )

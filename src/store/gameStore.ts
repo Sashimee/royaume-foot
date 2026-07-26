@@ -2,26 +2,36 @@ import { create } from 'zustand'
 import { ROUND } from '../game/constants'
 import type { ShotOutcome } from '../game/scoring'
 import { starsFor } from '../game/scoring'
+import { starsForSaves } from '../game/keeperGame'
 
 export type Screen = 'home' | 'wardrobe' | 'play' | 'result'
 
+/** Which mini-game the round is playing. */
+export type GameMode = 'shoot' | 'keep'
+
+/** Everything that can be shouted after an attempt, across both modes. */
+export type RoundOutcome = ShotOutcome | 'saved' | 'conceded'
+
 export interface GameState {
   screen: Screen
+  mode: GameMode
   shotsTaken: number
+  /** Successes: goals scored in `shoot`, saves made in `keep`. */
   goals: number
   bonuses: number
-  /** Result of the shot just finished, shown as a big shout. Cleared on reset. */
-  lastOutcome: ShotOutcome | null
-  /** Bumped on every shot so the shout re-animates even on a repeat outcome. */
+  /** Result of the attempt just finished, shown as a big shout. */
+  lastOutcome: RoundOutcome | null
+  /** Bumped every attempt so the shout re-animates even on a repeat outcome. */
   shoutId: number
   /** Stars awarded by the round that just ended. */
   earnedStars: number
 
   goHome: () => void
   goWardrobe: () => void
-  startRound: () => void
+  startRound: (mode: GameMode) => void
   finishRound: () => void
   recordShot: (outcome: ShotOutcome, target: string | null) => void
+  recordSave: (saved: boolean) => void
   clearShout: () => void
 }
 
@@ -36,11 +46,12 @@ const emptyRound = {
 
 export const useGame = create<GameState>((set, get) => ({
   screen: 'home',
+  mode: 'shoot',
   ...emptyRound,
 
   goHome: () => set({ screen: 'home', ...emptyRound }),
   goWardrobe: () => set({ screen: 'wardrobe' }),
-  startRound: () => set({ screen: 'play', ...emptyRound }),
+  startRound: (mode) => set({ screen: 'play', mode, ...emptyRound }),
   finishRound: () => set({ screen: 'result' }),
 
   recordShot: (outcome, target) => {
@@ -56,16 +67,49 @@ export const useGame = create<GameState>((set, get) => ({
       bonuses,
       lastOutcome: outcome,
       shoutId: s.shoutId + 1,
-      // The round result is computed here, at the moment the last shot lands,
-      // so the result screen is a pure read of already-settled state.
+      // The round result is computed here, at the moment the last attempt
+      // lands, so the result screen is a pure read of already-settled state.
       earnedStars: finished ? starsFor(goals, bonuses) : 0,
+    })
+  },
+
+  recordSave: (saved) => {
+    const s = get()
+    const shotsTaken = s.shotsTaken + 1
+    const goals = s.goals + (saved ? 1 : 0)
+    const finished = shotsTaken >= ROUND.shotsPerRound
+
+    set({
+      shotsTaken,
+      goals,
+      lastOutcome: saved ? 'saved' : 'conceded',
+      shoutId: s.shoutId + 1,
+      earnedStars: finished ? starsForSaves(goals, ROUND.shotsPerRound) : 0,
     })
   },
 
   clearShout: () => set({ lastOutcome: null }),
 }))
 
-/** True once the child has used every shot in the round. */
+/** True once the child has used every attempt in the round. */
 export function roundIsOver(s: Pick<GameState, 'shotsTaken'>): boolean {
   return s.shotsTaken >= ROUND.shotsPerRound
+}
+
+/** i18n key for the big shout after an attempt, in either mode. */
+export function shoutKeyFor(outcome: RoundOutcome) {
+  switch (outcome) {
+    case 'goal':
+      return 'shout.goal' as const
+    case 'save':
+      return 'shout.save' as const
+    case 'post':
+      return 'shout.post' as const
+    case 'saved':
+      return 'shout.saved' as const
+    case 'conceded':
+      return 'shout.conceded' as const
+    default:
+      return 'shout.miss' as const
+  }
 }

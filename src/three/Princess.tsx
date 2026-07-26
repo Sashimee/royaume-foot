@@ -18,12 +18,22 @@ export function Princess({
   mode = 'idle',
   showcase = false,
   position = [0, 0, 0],
+  facing = 0,
+  spinToCelebrate = true,
 }: {
   data: PrincessData
   mode?: PrincessMode
   /** Wardrobe/menu presentation: face the camera and turn slowly on the spot. */
   showcase?: boolean
   position?: [number, number, number]
+  /** Base yaw she settles to. 0 faces the goal; Math.PI faces the camera. */
+  facing?: number
+  /**
+   * Whether celebrating spins her round. True when she is playing *up* the
+   * pitch with her back to us; false when she already faces the camera (the
+   * keeper mode), where a spin would turn her away at the best moment.
+   */
+  spinToCelebrate?: boolean
 }) {
   const root = useRef<THREE.Group>(null)
   const legL = useRef<THREE.Group>(null)
@@ -54,7 +64,7 @@ export function Princess({
 
     if (mode === 'celebrate') {
       // Turn to face the camera, jump, arms in the air.
-      g.rotation.y = damp(g.rotation.y, Math.PI, 6, dt)
+      g.rotation.y = damp(g.rotation.y, spinToCelebrate ? facing + Math.PI : facing, 6, dt)
       g.position.y = position[1] + Math.abs(Math.sin(t * 6)) * 0.28
       const raise = Math.min(1, t * 4)
       swing(armL, -2.4 * raise + Math.sin(t * 9) * 0.2)
@@ -64,7 +74,7 @@ export function Princess({
       return
     }
 
-    g.rotation.y = damp(g.rotation.y, 0, 6, dt)
+    g.rotation.y = damp(g.rotation.y, facing, 6, dt)
 
     if (mode === 'kick') {
       // A single forward swing of the right leg that settles back to standing.

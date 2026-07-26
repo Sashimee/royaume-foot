@@ -45,7 +45,9 @@ export function HomeScreen() {
       </div>
 
       <div className="flex flex-col items-center gap-3 p-6 pb-10">
-        <BigButton onClick={startRound}>⚽ {t('home.play')}</BigButton>
+        <p className="text-lg font-bold text-white/85">{t('home.pick')}</p>
+        <BigButton onClick={() => startRound('shoot')}>⚽ {t('mode.shoot')}</BigButton>
+        <BigButton onClick={() => startRound('keep')}>🧤 {t('mode.keep')}</BigButton>
         <BigButton tone="secondary" onClick={goWardrobe}>
           👗 {t('home.wardrobe')}
         </BigButton>

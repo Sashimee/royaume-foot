@@ -110,3 +110,49 @@ export const ROUND = {
 
 /** How long the ball is allowed to be in flight before the shot is called. */
 export const SHOT_TIMEOUT = 4.5
+
+/**
+ * "Gardienne du château" — the child plays *in* goal and a friendly dragon
+ * shoots at them.
+ *
+ * The control is direct positional drag: the princess follows the finger along
+ * the goal line. For this age that beats swipe-to-dive, which asks a child to
+ * translate a gesture into an intention. Here there is nothing to translate —
+ * put her where the ball is going.
+ */
+export const KEEP = {
+  /** How far she can stretch either side of where she stands. */
+  reach: 1.25,
+  /** She can reach anything below this; nothing is aimed above it. */
+  reachHeight: 2.6,
+  /** Units per second she slides. Fast enough to always be *able* to get there. */
+  maxSpeed: 7.5,
+  /**
+   * Telegraph. The target ring appears this long before the kick, which is the
+   * single thing that makes the mode fair for a six-year-old — reacting to a
+   * ball already in flight is a reflex test, and this is not that.
+   */
+  windUp: 1.0,
+  /** Ball travel time from the shooter to the goal line. */
+  flightTime: 0.85,
+  /** Shots never aim beyond this fraction of the goal half-width. */
+  aimSpread: 0.78,
+  /** Lowest and highest a shot is ever aimed. */
+  aimMinY: 0.5,
+  aimMaxY: 2.1,
+  /**
+   * Where the dragon strikes from.
+   *
+   * Composition, not realism, sets this. Near the camera the visible pitch is
+   * only ~±1.9 units wide, so a shooter down there is either off-screen or
+   * enormous; at mid-pitch he plants himself squarely in front of the goal. Far
+   * out and off to one side (see `shooterMinX`) he stays small and clear of the
+   * goal mouth the child needs to watch.
+   */
+  shooterZ: -8,
+  /** The shooter always stands at least this far off centre, on one side. */
+  shooterMinX: 2.5,
+  shooterSideSpread: 1.5,
+  /** How long the result is held on screen before the next shot. */
+  settle: 1.6,
+} as const

@@ -44,6 +44,22 @@ src/
 └── i18n/      # six flat key→string maps, English fallback, no interpolation
 ```
 
+## Mini-games
+
+`gameStore.mode` selects one; both share the HUD, the star economy and the
+result screen.
+
+| Mode | Verb | Control | Logic |
+| --- | --- | --- | --- |
+| `shoot` | score past the dragon | flick towards the goal | `game/aim.ts`, `game/scoring.ts` |
+| `keep` | save the dragon's shots | drag her along the goal line | `game/keeperGame.ts` |
+
+Keeper mode is **telegraphed**: a target ring shows where the shot will land a
+full second before the kick. That is the whole reason the mode is fair at this
+age — reacting to a ball already in flight is a reflex test, and this is not
+that. `ballPosAt()` is analytic precisely so the ball lands exactly where the
+ring promised.
+
 ## Rules that are load-bearing
 
 - **`src/game/*` must never import three.** That separation is what lets the
@@ -57,6 +73,11 @@ src/
 - **Never re-render per frame.** The match loop writes straight to the scene
   graph through refs inside `useFrame`. React state is for discrete events only
   (a shot was judged, the round ended).
+- **Never drive a three.js property from both JSX and the frame loop.** R3F
+  re-applies its declared props on every re-render and will stamp out imperative
+  writes. The keeper-mode telegraph ring is hidden by scaling to zero, not by a
+  `visible` prop, for exactly this reason; it also uses `depthTest={false}` so a
+  shot aimed at the centre cannot hide the marker behind the princess.
 - **Don't clamp `dt` tightly.** `Match.tsx` caps frame delta at 0.25 s, not at
   `1/20` — a small ceiling makes everything below that frame rate run in *slow
   motion* instead of dropping frames. `stepBall` sub-steps internally, so a

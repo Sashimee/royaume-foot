@@ -14,6 +14,7 @@ import { BigButton, Panel, StarRow } from './ui'
 export function ResultScreen() {
   const t = useT()
   const goals = useGame((s) => s.goals)
+  const mode = useGame((s) => s.mode)
   const earnedStars = useGame((s) => s.earnedStars)
   const startRound = useGame((s) => s.startRound)
   const goWardrobe = useGame((s) => s.goWardrobe)
@@ -44,7 +45,8 @@ export function ResultScreen() {
             <StarRow count={earnedStars} max={ROUND.starsForPerfect} size="lg" />
 
             <p className="text-2xl font-bold text-white/90">
-              🥅 {goals} / {ROUND.shotsPerRound} {t('result.goals')}
+              {mode === 'shoot' ? '🥅' : '🧤'} {goals} / {ROUND.shotsPerRound}{' '}
+              {mode === 'shoot' ? t('result.goals') : t('result.saves')}
             </p>
 
             <p className="text-lg font-semibold text-yellow-200">
@@ -58,7 +60,7 @@ export function ResultScreen() {
             )}
 
             <div className="mt-1 flex flex-col gap-3 self-stretch">
-              <BigButton onClick={startRound}>⚽ {t('result.again')}</BigButton>
+              <BigButton onClick={() => startRound(mode)}>⚽ {t('result.again')}</BigButton>
               <BigButton tone="secondary" onClick={goWardrobe}>
                 👗 {t('result.wardrobe')}
               </BigButton>

@@ -9,7 +9,7 @@ import { grassTexture, netTexture } from './textures'
  * static — it is built once and never re-renders, so the per-frame cost is just
  * the draw calls.
  */
-export function Pitch() {
+export function Pitch({ showTargets = true }: { showTargets?: boolean } = {}) {
   const grass = useMemo(() => grassTexture(), [])
   const net = useMemo(() => netTexture(), [])
 
@@ -34,9 +34,13 @@ export function Pitch() {
 
       <Goal goalZ={goalZ} halfWidth={goalHalfWidth} height={goalHeight} postRadius={postRadius} net={net} />
 
-      {TARGETS.map((t) => (
-        <Crown key={t.id} x={t.x} y={t.y} z={goalZ + 0.35} radius={t.radius} />
-      ))}
+      {/* Bonus crowns are a shooting-mode rule. In keeper mode they are not
+          only pointless, they read as aiming targets and compete with the
+          telegraph ring the child actually needs to watch. */}
+      {showTargets &&
+        TARGETS.map((t) => (
+          <Crown key={t.id} x={t.x} y={t.y} z={goalZ + 0.35} radius={t.radius} />
+        ))}
 
       <Stands />
       <Castle />

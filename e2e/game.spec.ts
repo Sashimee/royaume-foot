@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
-const PLAY = /Jouer|Play|Spielen|Jugar|Gioca|Jogar/
+// The home screen now offers a mini-game each; this is the shooting one.
+const PLAY = /Tirer|Shoot|Schießen|Tirar|Rematar/i
 
 /** Shots remaining, read off the HUD's accessible label ("3 / 5"). */
 async function shotsLeft(page: Page): Promise<number> {
@@ -100,5 +101,44 @@ test.describe('Royaume Foot', () => {
     await page.reload()
     await page.getByRole('button', { name: /habiller|Dress up|Anziehen|Vestir|Vestire/ }).first().click()
     await expect(page.getByRole('button', { name: 'Amara' })).toHaveAttribute('aria-pressed', 'true')
+  })
+})
+
+test.describe('Gardienne du château', () => {
+  const KEEP_MODE = /gardienne|keeper|Torfrau|portera|portiera|guarda-redes/i
+
+  test('plays a keeping round and always ends in a reward', async ({ page }) => {
+    // Each attempt is a wind-up + flight + celebration cycle of ~3.5s.
+    test.setTimeout(150_000)
+
+    await page.goto('./')
+    await page.getByRole('button', { name: KEEP_MODE }).first().click()
+
+    await expect(page.getByTestId('shots')).toBeVisible()
+    expect(await shotsLeft(page)).toBe(5)
+
+    // Sweep her across the goal. The point is not to save — it is that the
+    // control responds and the round always completes.
+    for (let i = 0; i < 5; i++) {
+      const x = i % 2 === 0 ? 90 : 300
+      await page.mouse.move(x, 620)
+      await page.mouse.down()
+      await page.mouse.move(x === 90 ? 300 : 90, 620)
+      await page.mouse.up()
+      await expect
+        .poll(async () => shotsLeft(page), { timeout: 20_000 })
+        .toBeLessThanOrEqual(4 - i)
+    }
+
+    const again = page.getByRole('button', { name: /Encore|Again|Nochmal|Otra vez|Ancora|Outra/ })
+    await expect(again).toBeVisible({ timeout: 15_000 })
+    // No fail state: even a round with no saves at all pays out a star.
+    await expect(page.getByText(/⭐/).first()).toBeVisible()
+  })
+
+  test('offers both mini-games from the menu', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.getByRole('button', { name: /tirer|shoot|schießen|rematar/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: KEEP_MODE })).toBeVisible()
   })
 })

@@ -43,6 +43,13 @@ const en = {
   'stars.total': 'stars',
   'sound.on': 'Sound on',
   'sound.off': 'Sound off',
+  'mode.shoot': 'Shoot!',
+  'mode.keep': 'Be the keeper',
+  'keep.hint': 'Slide her to catch the ball',
+  'shout.saved': 'CAUGHT!',
+  'shout.conceded': 'Oh no!',
+  'result.saves': 'saves',
+  'home.pick': 'What shall we play?',
 } as const
 
 export type TranslationKey = keyof typeof en
@@ -74,6 +81,13 @@ const fr: Table = {
   'stars.total': 'étoiles',
   'sound.on': 'Son allumé',
   'sound.off': 'Son éteint',
+  'mode.shoot': 'Tirer !',
+  'mode.keep': 'Être gardienne',
+  'keep.hint': 'Glisse-la pour attraper le ballon',
+  'shout.saved': 'ARRÊTÉ !',
+  'shout.conceded': 'Oh non !',
+  'result.saves': 'arrêts',
+  'home.pick': 'On joue à quoi ?',
 }
 
 const de: Table = {
@@ -101,6 +115,13 @@ const de: Table = {
   'stars.total': 'Sterne',
   'sound.on': 'Ton an',
   'sound.off': 'Ton aus',
+  'mode.shoot': 'Schießen!',
+  'mode.keep': 'Torfrau sein',
+  'keep.hint': 'Schieb sie zum Ball',
+  'shout.saved': 'GEFANGEN!',
+  'shout.conceded': 'Oh nein!',
+  'result.saves': 'Paraden',
+  'home.pick': 'Was spielen wir?',
 }
 
 const es: Table = {
@@ -128,6 +149,13 @@ const es: Table = {
   'stars.total': 'estrellas',
   'sound.on': 'Sonido activado',
   'sound.off': 'Sonido apagado',
+  'mode.shoot': '¡Tirar!',
+  'mode.keep': 'Ser portera',
+  'keep.hint': 'Deslízala para atrapar el balón',
+  'shout.saved': '¡ATRAPADO!',
+  'shout.conceded': '¡Oh, no!',
+  'result.saves': 'paradas',
+  'home.pick': '¿A qué jugamos?',
 }
 
 const it: Table = {
@@ -155,6 +183,13 @@ const it: Table = {
   'stars.total': 'stelle',
   'sound.on': 'Audio acceso',
   'sound.off': 'Audio spento',
+  'mode.shoot': 'Tirare!',
+  'mode.keep': 'Fare la portiera',
+  'keep.hint': 'Falla scorrere per prendere il pallone',
+  'shout.saved': 'PRESA!',
+  'shout.conceded': 'Oh no!',
+  'result.saves': 'parate',
+  'home.pick': 'A cosa giochiamo?',
 }
 
 const pt: Table = {
@@ -182,6 +217,13 @@ const pt: Table = {
   'stars.total': 'estrelas',
   'sound.on': 'Som ligado',
   'sound.off': 'Som desligado',
+  'mode.shoot': 'Rematar!',
+  'mode.keep': 'Ser guarda-redes',
+  'keep.hint': 'Desliza-a para apanhar a bola',
+  'shout.saved': 'APANHOU!',
+  'shout.conceded': 'Oh não!',
+  'result.saves': 'defesas',
+  'home.pick': 'Ao que vamos jogar?',
 }
 
 export const TRANSLATIONS: Record<Lang, Table> = { en, fr, de, es, it, pt }
