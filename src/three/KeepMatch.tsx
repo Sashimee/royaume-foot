@@ -5,11 +5,11 @@ import * as THREE from 'three'
 import { KEEP, PITCH } from '../game/constants'
 import type { Attempt } from '../game/keeperGame'
 import { ballPosAt, isSave, makeAttempt, seededRandom, stepPlayerKeeper } from '../game/keeperGame'
-import type { BallSkin, Princess as PrincessData } from '../data/roster'
+import type { BallSkin, Character as CharacterData } from '../data/roster'
 import { Ball, BlobShadow } from './Ball'
 import { Dragon } from './Dragon'
-import { Princess } from './Princess'
-import type { PrincessMode } from './Princess'
+import { Character } from './Character'
+import type { CharacterMode } from './characterRig'
 
 export interface KeepHandle {
   /** Where along the goal line the child wants her, in pitch units. */
@@ -36,14 +36,14 @@ interface Sim {
  */
 export function KeepMatch({
   api,
-  princess,
+  character,
   ballSkin,
   frozen,
   cheerUntil,
   onResult,
 }: {
   api: RefObject<KeepHandle | null>
-  princess: PrincessData
+  character: CharacterData
   ballSkin: BallSkin
   frozen: boolean
   cheerUntil: RefObject<number>
@@ -52,9 +52,9 @@ export function KeepMatch({
   const ballRef = useRef<THREE.Group>(null)
   const shadowRef = useRef<THREE.Mesh>(null)
   const shooterRef = useRef<THREE.Group>(null)
-  const princessRef = useRef<THREE.Group>(null)
+  const playerRef = useRef<THREE.Group>(null)
   const ringRef = useRef<THREE.Group>(null)
-  const [princessMode, setPrincessMode] = useState<PrincessMode>('idle')
+  const [charMode, setCharacterMode] = useState<CharacterMode>('idle')
 
   const rand = useMemo(() => seededRandom(Date.now() & 0xffff), [])
   const sim = useRef<Sim>({
@@ -103,18 +103,18 @@ export function KeepMatch({
       const saved = isSave(s.attempt, s.keeperX)
       s.phase = 'settle'
       s.t = 0
-      setPrincessMode(saved ? 'celebrate' : 'idle')
+      setCharacterMode(saved ? 'celebrate' : 'idle')
       if (saved) cheerUntil.current = now.current + 2.2
       resultCallback.current(saved)
     } else if (s.phase === 'settle' && s.t >= KEEP.settle) {
       s.attempt = makeAttempt(rand)
       s.phase = 'windup'
       s.t = 0
-      setPrincessMode('idle')
+      setCharacterMode('idle')
     }
 
     // --- drive the scene ---------------------------------------------------
-    const princessGroup = princessRef.current
+    const princessGroup = playerRef.current
     if (princessGroup) princessGroup.position.x = s.keeperX
 
     const ball = ballRef.current
@@ -166,9 +166,9 @@ export function KeepMatch({
     <group>
       {/* The player's keeper. `facing` turns her towards the shooter, which is
           also towards the camera — so the child sees her face, not her back. */}
-      <group ref={princessRef} position={[0, 0, PITCH.goalZ + 0.7]}>
+      <group ref={playerRef} position={[0, 0, PITCH.goalZ + 0.7]}>
         <group scale={1.2}>
-          <Princess data={princess} mode={princessMode} facing={Math.PI} spinToCelebrate={false} />
+          <Character data={character} mode={charMode} facing={Math.PI} spinToCelebrate={false} />
         </group>
       </group>
 

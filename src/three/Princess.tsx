@@ -1,9 +1,7 @@
-import { useEffect, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Princess as PrincessData } from '../data/roster'
-
-export type PrincessMode = 'idle' | 'kick' | 'celebrate'
+import { useCharacterRig, useRigRefs } from './characterRig'
+import type { CharacterMode } from './characterRig'
 
 /**
  * A princess built entirely from primitives — no .glb, no modelling tool, no
@@ -11,7 +9,8 @@ export type PrincessMode = 'idle' | 'kick' | 'celebrate'
  * entry, so a new character is a data change.
  *
  * She is modelled facing **-z** (towards the goal), which is the direction she
- * plays in. On a goal she spins round to face the camera and cheers.
+ * plays in. Motion lives in the shared character rig, so she and the knights
+ * cannot drift apart.
  */
 export function Princess({
   data,
@@ -22,88 +21,24 @@ export function Princess({
   spinToCelebrate = true,
 }: {
   data: PrincessData
-  mode?: PrincessMode
+  mode?: CharacterMode
   /** Wardrobe/menu presentation: face the camera and turn slowly on the spot. */
   showcase?: boolean
   position?: [number, number, number]
   /** Base yaw she settles to. 0 faces the goal; Math.PI faces the camera. */
   facing?: number
-  /**
-   * Whether celebrating spins her round. True when she is playing *up* the
-   * pitch with her back to us; false when she already faces the camera (the
-   * keeper mode), where a spin would turn her away at the best moment.
-   */
   spinToCelebrate?: boolean
 }) {
-  const root = useRef<THREE.Group>(null)
-  const legL = useRef<THREE.Group>(null)
-  const legR = useRef<THREE.Group>(null)
-  const armL = useRef<THREE.Group>(null)
-  const armR = useRef<THREE.Group>(null)
-  const clock = useRef(0)
-
-  // Restart the animation whenever the mode changes, so a second goal in a row
-  // replays the celebration instead of continuing mid-way through it.
-  useEffect(() => {
-    clock.current = 0
-  }, [mode])
-
-  useFrame((_, dt) => {
-    clock.current += dt
-    const t = clock.current
-    const g = root.current
-    if (!g) return
-
-    if (showcase) {
-      g.rotation.y = Math.PI + Math.sin(t * 0.5) * 0.45
-      g.position.y = position[1] + Math.sin(t * 1.6) * 0.04
-      swing(armL, Math.sin(t * 1.6) * 0.12)
-      swing(armR, -Math.sin(t * 1.6) * 0.12)
-      return
-    }
-
-    if (mode === 'celebrate') {
-      // Turn to face the camera, jump, arms in the air.
-      g.rotation.y = damp(g.rotation.y, spinToCelebrate ? facing + Math.PI : facing, 6, dt)
-      g.position.y = position[1] + Math.abs(Math.sin(t * 6)) * 0.28
-      const raise = Math.min(1, t * 4)
-      swing(armL, -2.4 * raise + Math.sin(t * 9) * 0.2)
-      swing(armR, -2.4 * raise - Math.sin(t * 9) * 0.2)
-      swing(legL, 0)
-      swing(legR, 0)
-      return
-    }
-
-    g.rotation.y = damp(g.rotation.y, facing, 6, dt)
-
-    if (mode === 'kick') {
-      // A single forward swing of the right leg that settles back to standing.
-      const swingT = Math.min(1, t / 0.42)
-      const curve = Math.sin(swingT * Math.PI)
-      swing(legR, -1.5 * curve)
-      swing(legL, 0.25 * curve)
-      swing(armL, 0.7 * curve)
-      swing(armR, -0.5 * curve)
-      g.position.y = position[1]
-      return
-    }
-
-    // Idle: a small breath, and a bit of a sway.
-    g.position.y = position[1] + Math.sin(t * 2) * 0.03
-    g.rotation.z = Math.sin(t * 1.3) * 0.02
-    swing(armL, Math.sin(t * 2) * 0.1)
-    swing(armR, -Math.sin(t * 2) * 0.1)
-    swing(legL, 0)
-    swing(legR, 0)
-  })
+  const rig = useRigRefs()
+  useCharacterRig(rig, { mode, showcase, position, facing, spinToCelebrate })
 
   return (
-    <group ref={root} position={position}>
+    <group ref={rig.root} position={position}>
       {/* Legs pivot at the hip so the kick rotates from the right place. */}
-      <group ref={legL} position={[-0.12, 0.38, 0]}>
+      <group ref={rig.legL} position={[-0.12, 0.38, 0]}>
         <Leg skin={data.skin} />
       </group>
-      <group ref={legR} position={[0.12, 0.38, 0]}>
+      <group ref={rig.legR} position={[0.12, 0.38, 0]}>
         <Leg skin={data.skin} />
       </group>
 
@@ -122,10 +57,10 @@ export function Princess({
         <meshToonMaterial color={data.dressTrim} />
       </mesh>
 
-      <group ref={armL} position={[-0.22, 1.3, 0]}>
+      <group ref={rig.armL} position={[-0.22, 1.3, 0]}>
         <Arm skin={data.skin} />
       </group>
-      <group ref={armR} position={[0.22, 1.3, 0]}>
+      <group ref={rig.armR} position={[0.22, 1.3, 0]}>
         <Arm skin={data.skin} />
       </group>
 
@@ -263,11 +198,4 @@ function CrownHat({ color }: { color: string }) {
   )
 }
 
-function swing(ref: React.RefObject<THREE.Group | null>, x: number) {
-  if (ref.current) ref.current.rotation.x = x
-}
 
-/** Frame-rate independent approach to a target. */
-function damp(current: number, target: number, lambda: number, dt: number): number {
-  return THREE.MathUtils.lerp(current, target, 1 - Math.exp(-lambda * dt))
-}

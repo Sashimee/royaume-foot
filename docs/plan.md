@@ -164,9 +164,13 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 > là où l'anneau l'a promis — un télégraphe qui ment est pire que pas de
 > télégraphe.
 
-**Phase 3bis — Personnages & direction artistique — ⬜ à faire**
+**Phase 3bis — Personnages & direction artistique — ✅ fait**
 
-- ⬜ **Chevaliers jouables.** Ouvrir le roster à un second type de personnage :
+- ✅ **Chevaliers jouables.** *(fait)* 4 chevaliers (Lancelot, Zaïd, Mei, Bran),
+  union discriminée `Princess | Knight` dans le roster, composant `Character`
+  qui dispatche, rig d'animation partagé, un chevalier gratuit dès le départ,
+  sauvegarde migrée sans perte. Le libellé du vestiaire devient « Qui joue ? ».
+  Cahier des charges initial : Ouvrir le roster à un second type de personnage :
   aujourd'hui `data/roster.ts` ne décrit que des princesses (peau, cheveux,
   robe, couronne) et `three/Princess.tsx` code cette anatomie en dur. Il faut
   un champ `kind: 'princess' | 'knight'` et un composant `Knight.tsx` frère,

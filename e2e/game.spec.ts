@@ -98,9 +98,17 @@ test.describe('Royaume Foot', () => {
 
     await expect(page.getByRole('button', { name: /Freya/ })).toBeDisabled()
 
+    // Knights share the picker with the princesses, and one is free from the
+    // start so a child who wants a knight can have one immediately.
+    const lancelot = page.getByRole('button', { name: 'Lancelot' })
+    await expect(lancelot).toBeEnabled()
+    await lancelot.click()
+    await expect(lancelot).toHaveAttribute('aria-pressed', 'true')
+    await expect(amara).toHaveAttribute('aria-pressed', 'false')
+
     await page.reload()
     await page.getByRole('button', { name: /habiller|Dress up|Anziehen|Vestir|Vestire/ }).first().click()
-    await expect(page.getByRole('button', { name: 'Amara' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('button', { name: 'Lancelot' })).toHaveAttribute('aria-pressed', 'true')
   })
 })
 

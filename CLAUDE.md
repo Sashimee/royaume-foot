@@ -40,7 +40,7 @@ src/
 ├── ui/        # DOM overlay: HUD, wardrobe, result. Tailwind, not 3D.
 ├── store/     # zustand: gameStore (round) + saveStore (persisted)
 ├── audio/     # Web Audio synthesis, no files
-├── data/      # roster: princesses and ball skins as plain data
+├── data/      # roster: characters (princess | knight) and ball skins, as data
 └── i18n/      # six flat key→string maps, English fallback, no interpolation
 ```
 
@@ -59,6 +59,28 @@ full second before the kick. That is the whole reason the mode is fair at this
 age — reacting to a ball already in flight is a reflex test, and this is not
 that. `ballPosAt()` is analytic precisely so the ball lands exactly where the
 ring promised.
+
+## Playable characters
+
+`data/roster.ts` holds a **discriminated union**: a `Princess` has hair and a
+dress, a `Knight` has armour and a plume, and they share only a skin tone, a
+name and an unlock threshold. Flattening them into one optional-field bag would
+let a princess be given a plume.
+
+- Draw one with `<Character>`, never `<Princess>`/`<Knight>` directly. Both
+  mini-games, the menu and the wardrobe render it and never learn which kind
+  they got — adding a third type is a branch in `Character.tsx` and nowhere else.
+- Motion lives in `three/characterRig.ts` and is shared. Princesses and knights
+  look nothing alike but move identically, and a copy of the animation per type
+  would drift.
+- **At least one of each kind must be free** (`unlockStars: 0`), asserted in
+  `data/roster.test.ts`. Locking every knight tells a child who wants a knight
+  that the game is not for them yet.
+- Faces stay visible. The knight's helmet is an open cap on purpose: a closed
+  visor is more accurate and completely wrong here, because a blank slit has no
+  expression.
+- `saveStore` persists `characterId` but still reads the old `princessId` field,
+  so upgrading does not wipe a child's save.
 
 ## Rules that are load-bearing
 

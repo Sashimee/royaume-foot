@@ -6,7 +6,7 @@ import type { ShotOutcome } from '../game/scoring'
 import type { GameMode } from '../store/gameStore'
 import { shoutKeyFor, useGame } from '../store/gameStore'
 import { useSave } from '../store/saveStore'
-import { ballById, princessById } from '../data/roster'
+import { ballById, characterById } from '../data/roster'
 import { useT } from '../i18n/useLang'
 import { Scene } from '../three/Scene'
 import { Pitch } from '../three/Pitch'
@@ -28,7 +28,7 @@ export function PlayScreen() {
   const keepApi = useRef<KeepHandle | null>(null)
   const cheerUntil = useRef(0)
 
-  const princess = useSave((s) => princessById(s.princessId))
+  const character = useSave((s) => characterById(s.characterId))
   const ballSkin = useSave((s) => ballById(s.ballId))
   const addStars = useSave((s) => s.addStars)
 
@@ -103,7 +103,7 @@ export function PlayScreen() {
         {mode === 'shoot' ? (
           <Match
             api={api}
-            princess={princess}
+            character={character}
             ballSkin={ballSkin}
             frozen={roundOver}
             cheerUntil={cheerUntil}
@@ -112,7 +112,7 @@ export function PlayScreen() {
         ) : (
           <KeepMatch
             api={keepApi}
-            princess={princess}
+            character={character}
             ballSkin={ballSkin}
             frozen={roundOver}
             cheerUntil={cheerUntil}

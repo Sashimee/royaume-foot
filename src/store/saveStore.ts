@@ -1,23 +1,23 @@
 import { create } from 'zustand'
-import { BALLS, PRINCESSES } from '../data/roster'
+import { BALLS, CHARACTERS } from '../data/roster'
 
 const KEY = 'royaume-foot:save:v1'
 
 export interface SaveState {
   /** Lifetime stars. Never spent — see the note on unlocking below. */
   stars: number
-  princessId: string
+  characterId: string
   ballId: string
   muted: boolean
   addStars: (n: number) => void
-  setPrincess: (id: string) => void
+  setCharacter: (id: string) => void
   setBall: (id: string) => void
   toggleMute: () => void
 }
 
 interface Persisted {
   stars: number
-  princessId: string
+  characterId: string
   ballId: string
   muted: boolean
 }
@@ -25,21 +25,24 @@ interface Persisted {
 function load(): Persisted {
   const fallback: Persisted = {
     stars: 0,
-    princessId: PRINCESSES[0].id,
+    characterId: CHARACTERS[0].id,
     ballId: BALLS[0].id,
     muted: false,
   }
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return fallback
-    const parsed = JSON.parse(raw) as Partial<Persisted>
+    const parsed = JSON.parse(raw) as Partial<Persisted> & { princessId?: string }
     return {
       stars: typeof parsed.stars === 'number' && parsed.stars >= 0 ? parsed.stars : 0,
       // Guard against a save written by an older build that named things we no
       // longer ship, otherwise the child boots into an empty wardrobe.
-      princessId: PRINCESSES.some((p) => p.id === parsed.princessId)
-        ? parsed.princessId!
-        : fallback.princessId,
+      // `princessId` is the field name from the first release, before knights
+      // existed. Reading it keeps a child's chosen character (and their whole
+      // save) across the upgrade instead of silently resetting them.
+      characterId: CHARACTERS.some((c) => c.id === (parsed.characterId ?? parsed.princessId))
+        ? (parsed.characterId ?? parsed.princessId)!
+        : fallback.characterId,
       ballId: BALLS.some((b) => b.id === parsed.ballId) ? parsed.ballId! : fallback.ballId,
       muted: parsed.muted === true,
     }
@@ -63,8 +66,8 @@ export const useSave = create<SaveState>((set, get) => ({
     set({ stars: get().stars + n })
     save(get)
   },
-  setPrincess: (id) => {
-    set({ princessId: id })
+  setCharacter: (id) => {
+    set({ characterId: id })
     save(get)
   },
   setBall: (id) => {
@@ -78,8 +81,8 @@ export const useSave = create<SaveState>((set, get) => ({
 }))
 
 function save(get: () => SaveState) {
-  const { stars, princessId, ballId, muted } = get()
-  persist({ stars, princessId, ballId, muted })
+  const { stars, characterId, ballId, muted } = get()
+  persist({ stars, characterId, ballId, muted })
 }
 
 /**

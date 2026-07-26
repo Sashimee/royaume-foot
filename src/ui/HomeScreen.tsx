@@ -1,10 +1,10 @@
 import { Canvas } from '@react-three/fiber'
 import { useGame } from '../store/gameStore'
 import { useSave } from '../store/saveStore'
-import { princessById } from '../data/roster'
+import { characterById } from '../data/roster'
 import { useT, useLangStore } from '../i18n/useLang'
 import { LANGS } from '../i18n/translations'
-import { Princess } from '../three/Princess'
+import { Character } from '../three/Character'
 import { BigButton, IconButton } from './ui'
 
 const SKY = 'linear-gradient(180deg, #4a1e6b 0%, #a13b91 45%, #ff9ec4 100%)'
@@ -13,7 +13,7 @@ export function HomeScreen() {
   const t = useT()
   const startRound = useGame((s) => s.startRound)
   const goWardrobe = useGame((s) => s.goWardrobe)
-  const princess = useSave((s) => princessById(s.princessId))
+  const character = useSave((s) => characterById(s.characterId))
   const stars = useSave((s) => s.stars)
   const muted = useSave((s) => s.muted)
   const toggleMute = useSave((s) => s.toggleMute)
@@ -40,7 +40,7 @@ export function HomeScreen() {
         <Canvas dpr={[1, 2]} gl={{ alpha: true, antialias: true }} camera={{ position: [0, 1.5, 3.6], fov: 45 }}>
           <hemisphereLight args={['#ffe9f6', '#7a4a9a', 1.2]} />
           <directionalLight position={[3, 6, 5]} intensity={1.1} />
-          <Princess data={princess} showcase position={[0, -0.9, 0]} />
+          <Character data={character} showcase position={[0, -0.9, 0]} />
         </Canvas>
       </div>
 

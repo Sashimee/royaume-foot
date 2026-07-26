@@ -10,11 +10,11 @@ import { makeKeeper, startDive, stepKeeper } from '../game/keeper'
 import type { KeeperState } from '../game/keeper'
 import { evaluateCrossing } from '../game/scoring'
 import type { ShotOutcome } from '../game/scoring'
-import type { BallSkin, Princess as PrincessData } from '../data/roster'
+import type { BallSkin, Character as CharacterData } from '../data/roster'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
 import { Dragon } from './Dragon'
-import { Princess } from './Princess'
-import type { PrincessMode } from './Princess'
+import { Character } from './Character'
+import type { CharacterMode } from './characterRig'
 
 /** How long the ball is left on screen after a shot is judged. */
 const SETTLE_TIME = 1.9
@@ -39,14 +39,14 @@ interface Sim {
 
 export function Match({
   api,
-  princess,
+  character,
   ballSkin,
   frozen,
   cheerUntil,
   onOutcome,
 }: {
   api: RefObject<MatchHandle | null>
-  princess: PrincessData
+  character: CharacterData
   ballSkin: BallSkin
   /** True once the round is over — no further shots are accepted. */
   frozen: boolean
@@ -57,7 +57,7 @@ export function Match({
   const shadowRef = useRef<THREE.Mesh>(null)
   const keeperRef = useRef<THREE.Group>(null)
   const trail = useRef<THREE.Vector3[]>([])
-  const [princessMode, setPrincessMode] = useState<PrincessMode>('idle')
+  const [charMode, setCharacterMode] = useState<CharacterMode>('idle')
 
   const sim = useRef<Sim>({ ball: makeBall(), keeper: makeKeeper(), phase: 'aim', t: 0, outcome: null })
   const spin = useMemo(() => new THREE.Quaternion(), [])
@@ -85,7 +85,7 @@ export function Match({
         s.t = 0
         s.outcome = null
         trail.current = []
-        setPrincessMode('kick')
+        setCharacterMode('kick')
       },
     }
     return () => {
@@ -137,7 +137,7 @@ export function Match({
       s.outcome = null
       s.ball = makeBall()
       trail.current = []
-      setPrincessMode('idle')
+      setCharacterMode('idle')
     }
 
     // --- push the simulation onto the scene graph -------------------------
@@ -198,7 +198,7 @@ export function Match({
     s.phase = 'settle'
     s.t = 0
     s.outcome = outcome
-    setPrincessMode(outcome === 'goal' ? 'celebrate' : 'idle')
+    setCharacterMode(outcome === 'goal' ? 'celebrate' : 'idle')
     if (outcome === 'goal') cheerUntil.current = now.current + 2.4
     outcomeCallback.current(outcome, target)
   }
@@ -206,7 +206,7 @@ export function Match({
   return (
     <group>
       <group scale={1.2}>
-        <Princess data={princess} mode={princessMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
+        <Character data={character} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
       <Dragon ref={keeperRef} />
       <Ball skin={ballSkin} ref={ballRef} />

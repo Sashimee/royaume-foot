@@ -1,9 +1,9 @@
 import { Canvas } from '@react-three/fiber'
 import { useGame } from '../store/gameStore'
 import { isUnlocked, useSave } from '../store/saveStore'
-import { BALLS, PRINCESSES, princessById } from '../data/roster'
+import { BALLS, CHARACTERS, characterById } from '../data/roster'
 import { useT } from '../i18n/useLang'
-import { Princess } from '../three/Princess'
+import { Character } from '../three/Character'
 import { BigButton, IconButton, PickCard } from './ui'
 
 const SKY = 'linear-gradient(180deg, #3b1e6b 0%, #7b3ba1 50%, #ffb3d9 100%)'
@@ -19,9 +19,9 @@ export function WardrobeScreen() {
   const startRound = useGame((s) => s.startRound)
 
   const stars = useSave((s) => s.stars)
-  const princessId = useSave((s) => s.princessId)
+  const characterId = useSave((s) => s.characterId)
   const ballId = useSave((s) => s.ballId)
-  const setPrincess = useSave((s) => s.setPrincess)
+  const setCharacter = useSave((s) => s.setCharacter)
   const setBall = useSave((s) => s.setBall)
 
   return (
@@ -39,22 +39,22 @@ export function WardrobeScreen() {
         <Canvas dpr={[1, 2]} gl={{ alpha: true, antialias: true }} camera={{ position: [0, 1.4, 3.4], fov: 45 }}>
           <hemisphereLight args={['#ffe9f6', '#7a4a9a', 1.2]} />
           <directionalLight position={[3, 6, 5]} intensity={1.1} />
-          <Princess data={princessById(princessId)} showcase position={[0, -0.95, 0]} />
+          <Character data={characterById(characterId)} showcase position={[0, -0.95, 0]} />
         </Canvas>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4" style={{ touchAction: 'pan-y' }}>
-        <h2 className="mb-3 text-2xl font-black text-white">👑 {t('wardrobe.title')}</h2>
+        <h2 className="mb-3 text-2xl font-black text-white">🧑‍🎤 {t('wardrobe.title')}</h2>
         <div className="mb-6 flex flex-wrap gap-3">
-          {PRINCESSES.map((p) => (
+          {CHARACTERS.map((p) => (
             <PickCard
               key={p.id}
               badge={p.badge}
               name={p.name}
-              selected={p.id === princessId}
+              selected={p.id === characterId}
               locked={!isUnlocked(p.unlockStars, stars)}
               lockedLabel={`⭐${p.unlockStars}`}
-              onClick={() => setPrincess(p.id)}
+              onClick={() => setCharacter(p.id)}
             />
           ))}
         </div>
