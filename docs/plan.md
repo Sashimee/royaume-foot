@@ -200,6 +200,35 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   *Pour mémoire, l'état d'avant :* une grosse sphère verte, des ailes-galets et
   un museau en cône — sans cou, sans silhouette, illisible dès qu'il s'éloignait.
 
+**Phase 3ter — Retours du terrain — ⬜ à faire**
+
+> 🎉 **Un enfant a testé le jeu et l'adore.** C'est la première validation
+> réelle : jusqu'ici tout l'équilibrage reposait sur des harnais qui *simulent*
+> un enfant. Tout ce qui suit vient de cette session ou du retour d'Alex.
+> *(À creuser au prochain test : qu'est-ce qui a été difficile ou pas compris ?
+> « ça marche » est un bon signal, « voilà où elle a bloqué » en est un
+> meilleur.)*
+
+- ⬜ **Le dragon n'est toujours pas bon.** La refonte a apporté une silhouette
+  mais il reste peu convaincant. À reprendre — et surtout, **il ne doit plus
+  être le seul gardien**.
+- ⬜ **Plusieurs gardiens**, dont une **licorne**, débloquables comme le reste.
+  Le gardien devient une entrée de données (`data/keepers.ts`) et un composant
+  par espèce, exactement comme les personnages jouables : le mode tir ne doit
+  pas savoir qui garde la cage.
+- ⬜ **Remise à zéro des étoiles.** Pouvoir tout recommencer depuis 0 —
+  redécouvrir les déblocages est une partie du plaisir. Doit être protégé par
+  une confirmation : c'est destructif, et à 6 ans on appuie partout.
+- ⬜ **Passe UI/UX du vestiaire :**
+  - **on ne voit pas qu'on peut faire défiler** la liste des skins — il faut une
+    affordance (dégradé de bord, flèche, ou une mise en page qui ne coupe pas
+    une rangée au milieu) ;
+  - **séparer princesses et chevaliers** en deux sections distinctes ;
+  - **des onglets** (personnages / ballons / terrains / amis) plutôt qu'une
+    seule longue colonne.
+- ⬜ **Plus de skins de ballon, et plus jolis.** Les cinq actuels sont dessinés
+  trop grossièrement au canvas 2D.
+
 **Phase 4 — Fête finale (2 j)**
 Casse-tour, Coupe du Royaume + trophée, PWA (manifest + service worker,
 installable), icônes, écran de fin.
