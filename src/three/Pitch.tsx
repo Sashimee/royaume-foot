@@ -9,7 +9,10 @@ import { grassTexture, netTexture } from './textures'
  * static — it is built once and never re-renders, so the per-frame cost is just
  * the draw calls.
  */
-export function Pitch({ showTargets = true }: { showTargets?: boolean } = {}) {
+export function Pitch({
+  showTargets = true,
+  showGoal = true,
+}: { showTargets?: boolean; showGoal?: boolean } = {}) {
   const grass = useMemo(() => grassTexture(), [])
   const net = useMemo(() => netTexture(), [])
 
@@ -27,12 +30,18 @@ export function Pitch({ showTargets = true }: { showTargets?: boolean } = {}) {
         <circleGeometry args={[0.22, 20]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
+      {showGoal && (
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, goalZ + 0.05]}>
         <ringGeometry args={[9.4, 9.6, 48, 1, Math.PI * 0.15, Math.PI * 0.7]} />
         <meshBasicMaterial color="#ffffff" transparent opacity={0.6} side={THREE.DoubleSide} />
       </mesh>
+      )}
 
-      <Goal goalZ={goalZ} halfWidth={goalHalfWidth} height={goalHeight} postRadius={postRadius} net={net} />
+      {/* The runner mini-game has no goal to aim at, and stars flying through
+          the frame on their way to the child looked like a bug. */}
+      {showGoal && (
+        <Goal goalZ={goalZ} halfWidth={goalHalfWidth} height={goalHeight} postRadius={postRadius} net={net} />
+      )}
 
       {/* Bonus crowns are a shooting-mode rule. In keeper mode they are not
           only pointless, they read as aiming targets and compete with the

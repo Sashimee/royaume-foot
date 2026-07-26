@@ -150,13 +150,18 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 >   trois partaient hors du cadre**. C'est le harnais d'équilibrage qui l'a
 >   révélé, pas la lecture du code.
 
-**Phase 3 — Contenu — 🟡 en cours**
+**Phase 3 — Contenu — 🟡 les 3 mini-jeux sont faits ; décors restants**
 - ✅ **Mini-jeu 2 « Gardienne du château »** : la princesse est en cage, le
   dragon tire. Contrôle par glissement direct (elle suit le doigt le long de la
   ligne), tir **télégraphié** par un anneau de visée une seconde avant la
   frappe — c'est ce qui rend le mode jouable à 6 ans. Sélecteur de mode au
   menu, i18n 6 langues, harnais de difficulté dédié, tests e2e.
-- ⬜ Mini-jeu 3 « Course aux étoiles », 3 stades, mascottes, carte du royaume.
+- ✅ **Mini-jeu 3 « Course aux étoiles »** : le personnage court, le monde
+  défile vers lui, l'enfant le déplace latéralement pour ramasser des étoiles.
+  Rien à éviter, rien qui punit — la difficulté est uniquement dans
+  l'écartement des étoiles. Durée fixe (24 s) avec barre de temps, étoiles
+  dorées qui valent double, harnais de difficulté et tests e2e.
+- ⬜ 3 stades, mascottes, carte du royaume.
 
 > **Écart :** un seul des deux mini-jeux prévus. Livrer le second à moitié aurait
 > coûté la qualité du premier ; la trajectoire du ballon en mode gardienne est

@@ -53,6 +53,12 @@ result screen.
 | --- | --- | --- | --- |
 | `shoot` | score past the dragon | flick towards the goal | `game/aim.ts`, `game/scoring.ts` |
 | `keep` | save the dragon's shots | drag her along the goal line | `game/keeperGame.ts` |
+| `run` | sweep up stars | drag her across the lane | `game/runGame.ts` |
+
+The runner ends on a **clock**, not on a count of attempts, which is why
+`gameStore.roundOver` is an explicit flag rather than `shotsTaken >= 5`. Its
+stars are a pool of meshes that get moved and hidden, never mounted per spawn —
+mounting React nodes twice a second would re-render the scene continuously.
 
 Keeper mode is **telegraphed**: a target ring shows where the shot will land a
 full second before the kick. That is the whole reason the mode is fair at this

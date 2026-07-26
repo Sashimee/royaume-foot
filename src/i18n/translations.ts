@@ -50,6 +50,9 @@ const en = {
   'shout.conceded': 'Oh no!',
   'result.saves': 'saves',
   'home.pick': 'What shall we play?',
+  'mode.run': 'Star run',
+  'run.hint': 'Slide to catch the stars',
+  'result.stars': 'stars caught',
 } as const
 
 export type TranslationKey = keyof typeof en
@@ -88,6 +91,9 @@ const fr: Table = {
   'shout.conceded': 'Oh non !',
   'result.saves': 'arrêts',
   'home.pick': 'On joue à quoi ?',
+  'mode.run': 'Course aux étoiles',
+  'run.hint': 'Glisse pour attraper les étoiles',
+  'result.stars': 'étoiles attrapées',
 }
 
 const de: Table = {
@@ -122,6 +128,9 @@ const de: Table = {
   'shout.conceded': 'Oh nein!',
   'result.saves': 'Paraden',
   'home.pick': 'Was spielen wir?',
+  'mode.run': 'Sternenlauf',
+  'run.hint': 'Schiebe zu den Sternen',
+  'result.stars': 'Sterne gefangen',
 }
 
 const es: Table = {
@@ -156,6 +165,9 @@ const es: Table = {
   'shout.conceded': '¡Oh, no!',
   'result.saves': 'paradas',
   'home.pick': '¿A qué jugamos?',
+  'mode.run': 'Carrera de estrellas',
+  'run.hint': 'Desliza para atrapar las estrellas',
+  'result.stars': 'estrellas atrapadas',
 }
 
 const it: Table = {
@@ -190,6 +202,9 @@ const it: Table = {
   'shout.conceded': 'Oh no!',
   'result.saves': 'parate',
   'home.pick': 'A cosa giochiamo?',
+  'mode.run': 'Corsa alle stelle',
+  'run.hint': 'Scorri per prendere le stelle',
+  'result.stars': 'stelle prese',
 }
 
 const pt: Table = {
@@ -224,6 +239,9 @@ const pt: Table = {
   'shout.conceded': 'Oh não!',
   'result.saves': 'defesas',
   'home.pick': 'Ao que vamos jogar?',
+  'mode.run': 'Corrida às estrelas',
+  'run.hint': 'Desliza para apanhar as estrelas',
+  'result.stars': 'estrelas apanhadas',
 }
 
 export const TRANSLATIONS: Record<Lang, Table> = { en, fr, de, es, it, pt }

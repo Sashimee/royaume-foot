@@ -48,6 +48,7 @@ export function HomeScreen() {
         <p className="text-lg font-bold text-white/85">{t('home.pick')}</p>
         <BigButton onClick={() => startRound('shoot')}>⚽ {t('mode.shoot')}</BigButton>
         <BigButton onClick={() => startRound('keep')}>🧤 {t('mode.keep')}</BigButton>
+        <BigButton onClick={() => startRound('run')}>⭐ {t('mode.run')}</BigButton>
         <BigButton tone="secondary" onClick={goWardrobe}>
           👗 {t('home.wardrobe')}
         </BigButton>

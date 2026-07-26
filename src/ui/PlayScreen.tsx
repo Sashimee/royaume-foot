@@ -15,8 +15,11 @@ import { Match } from '../three/Match'
 import type { MatchHandle } from '../three/Match'
 import { KeepMatch } from '../three/KeepMatch'
 import type { KeepHandle } from '../three/KeepMatch'
+import { RunMatch } from '../three/RunMatch'
+import type { RunHandle } from '../three/RunMatch'
 import { AimOverlay } from './AimOverlay'
 import { KeepOverlay } from './KeepOverlay'
+import { RunHud } from './RunHud'
 import { ResultScreen } from './ResultScreen'
 import { IconButton } from './ui'
 
@@ -26,6 +29,7 @@ export function PlayScreen() {
   const t = useT()
   const api = useRef<MatchHandle | null>(null)
   const keepApi = useRef<KeepHandle | null>(null)
+  const runApi = useRef<RunHandle | null>(null)
   const cheerUntil = useRef(0)
 
   const character = useSave((s) => characterById(s.characterId))
@@ -39,10 +43,12 @@ export function PlayScreen() {
   const earnedStars = useGame((s) => s.earnedStars)
   const recordShot = useGame((s) => s.recordShot)
   const recordSave = useGame((s) => s.recordSave)
+  const collectStar = useGame((s) => s.collectStar)
+  const finishRun = useGame((s) => s.finishRun)
   const finishRound = useGame((s) => s.finishRound)
   const goHome = useGame((s) => s.goHome)
 
-  const roundOver = shotsTaken >= ROUND.shotsPerRound
+  const roundOver = useGame((s) => s.roundOver)
   const awarded = useRef(false)
 
   const handleOutcome = useCallback(
@@ -77,6 +83,24 @@ export function PlayScreen() {
     [recordSave],
   )
 
+  const handleCollect = useCallback(
+    (big: boolean) => {
+      collectStar(big)
+      if (big) sfx.crown()
+      else sfx.star()
+    },
+    [collectStar],
+  )
+
+  const handleRunFinish = useCallback(
+    (collected: number, big: number) => {
+      finishRun(collected, big)
+      sfx.goal()
+      burst()
+    },
+    [finishRun],
+  )
+
   // Let the last celebration play out before the result panel slides in.
   useEffect(() => {
     if (!roundOver || screen !== 'play' || awarded.current) return
@@ -98,7 +122,7 @@ export function PlayScreen() {
   return (
     <div className="absolute inset-0">
       <Scene sky={SKY}>
-        <Pitch showTargets={mode === 'shoot'} />
+        <Pitch showTargets={mode === 'shoot'} showGoal={mode !== 'run'} />
         <Crowd cheerUntil={cheerUntil} />
         {mode === 'shoot' ? (
           <Match
@@ -109,7 +133,7 @@ export function PlayScreen() {
             cheerUntil={cheerUntil}
             onOutcome={handleOutcome}
           />
-        ) : (
+        ) : mode === 'keep' ? (
           <KeepMatch
             api={keepApi}
             character={character}
@@ -117,6 +141,16 @@ export function PlayScreen() {
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onResult={handleSave}
+          />
+        ) : (
+          <RunMatch
+            api={runApi}
+            character={character}
+            ballSkin={ballSkin}
+            frozen={roundOver}
+            cheerUntil={cheerUntil}
+            onCollect={handleCollect}
+            onFinish={handleRunFinish}
           />
         )}
       </Scene>
@@ -131,11 +165,13 @@ export function PlayScreen() {
               api.current?.shoot(shot)
             }}
           />
-        ) : (
+        ) : mode === 'keep' ? (
           <KeepOverlay hint={t('keep.hint')} onAim={(x) => keepApi.current?.aimAt(x)} />
+        ) : (
+          <KeepOverlay hint={t('run.hint')} onAim={(x) => runApi.current?.aimAt(x)} />
         ))}
 
-      <Hud shotsTaken={shotsTaken} goals={goals} mode={mode} onQuit={goHome} />
+      <Hud shotsTaken={shotsTaken} goals={goals} mode={mode} onQuit={goHome} progress={() => runApi.current?.progress() ?? 0} />
       <Shout />
 
       {screen === 'result' && <ResultScreen />}
@@ -148,11 +184,14 @@ function Hud({
   goals,
   mode,
   onQuit,
+  progress,
 }: {
   shotsTaken: number
   goals: number
   mode: GameMode
   onQuit: () => void
+  /** Runner mode only: how far through the run we are, 0..1. */
+  progress: () => number
 }) {
   const stars = useSave((s) => s.stars)
 
@@ -166,17 +205,22 @@ function Hud({
 
       <div className="flex flex-col items-end gap-2">
         {/* Shots remaining, as balls. No numbers needed to read it. */}
-        <div data-testid="shots" className="flex gap-1 rounded-full bg-black/30 px-4 py-2 backdrop-blur-sm" role="img"
-          aria-label={`${ROUND.shotsPerRound - shotsTaken} / ${ROUND.shotsPerRound}`}>
-          {Array.from({ length: ROUND.shotsPerRound }, (_, i) => (
-            <span key={i} className={`text-2xl ${i < shotsTaken ? 'opacity-25 grayscale' : ''}`}>
-              ⚽
-            </span>
-          ))}
-        </div>
+        {/* The runner has no attempts to count down — it ends on a clock. */}
+        {mode === 'run' ? (
+          <RunHud progress={progress} />
+        ) : (
+          <div data-testid="shots" className="flex gap-1 rounded-full bg-black/30 px-4 py-2 backdrop-blur-sm" role="img"
+            aria-label={`${ROUND.shotsPerRound - shotsTaken} / ${ROUND.shotsPerRound}`}>
+            {Array.from({ length: ROUND.shotsPerRound }, (_, i) => (
+              <span key={i} className={`text-2xl ${i < shotsTaken ? 'opacity-25 grayscale' : ''}`}>
+                ⚽
+              </span>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-3 rounded-full bg-black/30 px-4 py-2 backdrop-blur-sm">
           <span className="text-2xl font-black text-white">
-            {mode === 'shoot' ? '🥅' : '🧤'} {goals}
+            {mode === 'shoot' ? '🥅' : mode === 'keep' ? '🧤' : '✨'} {goals}
           </span>
           <span className="text-2xl font-black text-yellow-200">⭐ {stars}</span>
         </div>

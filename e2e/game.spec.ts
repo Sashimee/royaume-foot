@@ -150,3 +150,41 @@ test.describe('Gardienne du château', () => {
     await expect(page.getByRole('button', { name: KEEP_MODE })).toBeVisible()
   })
 })
+
+test.describe('Course aux étoiles', () => {
+  const RUN_MODE = /course aux étoiles|star run|sternenlauf|carrera de estrellas|corsa alle stelle|corrida às estrelas/i
+
+  test('runs to the clock and always ends in a reward', async ({ page }) => {
+    // The run lasts 24 seconds by design, plus mount and the result panel.
+    test.setTimeout(150_000)
+
+    await page.goto('./')
+    await page.getByRole('button', { name: RUN_MODE }).first().click()
+
+    // It ends on a clock, so it has a time bar instead of a count of attempts.
+    await expect(page.getByTestId('run-timer')).toBeVisible()
+    await expect(page.getByTestId('shots')).toHaveCount(0)
+
+    // Sweep across the lane while the run plays out.
+    for (let i = 0; i < 10; i++) {
+      const x = i % 2 === 0 ? 90 : 300
+      await page.mouse.move(x, 620)
+      await page.mouse.down()
+      await page.mouse.move(x === 90 ? 300 : 90, 620)
+      await page.mouse.up()
+      await page.waitForTimeout(1200)
+    }
+
+    const again = page.getByRole('button', { name: /Encore|Again|Nochmal|Otra vez|Ancora|Outra/ })
+    await expect(again).toBeVisible({ timeout: 40_000 })
+    // No fail state here either: a run always pays out at least one star.
+    await expect(page.getByText(/⭐/).first()).toBeVisible()
+  })
+
+  test('offers all three mini-games from the menu', async ({ page }) => {
+    await page.goto('./')
+    await expect(page.getByRole('button', { name: /tirer|shoot|schießen|rematar/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /gardienne|keeper|Torfrau|portera|portiera|guarda-redes/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: RUN_MODE })).toBeVisible()
+  })
+})

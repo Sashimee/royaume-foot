@@ -45,8 +45,18 @@ export function ResultScreen() {
             <StarRow count={earnedStars} max={ROUND.starsForPerfect} size="lg" />
 
             <p className="text-2xl font-bold text-white/90">
-              {mode === 'shoot' ? '🥅' : '🧤'} {goals} / {ROUND.shotsPerRound}{' '}
-              {mode === 'shoot' ? t('result.goals') : t('result.saves')}
+              {/* The runner has no denominator — there is no fixed number of
+                  stars to catch, so showing "12 / 5" would be nonsense. */}
+              {mode === 'run' ? (
+                <>
+                  ⭐ {goals} {t('result.stars')}
+                </>
+              ) : (
+                <>
+                  {mode === 'shoot' ? '🥅' : '🧤'} {goals} / {ROUND.shotsPerRound}{' '}
+                  {mode === 'shoot' ? t('result.goals') : t('result.saves')}
+                </>
+              )}
             </p>
 
             <p className="text-lg font-semibold text-yellow-200">
