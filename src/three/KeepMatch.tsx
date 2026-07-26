@@ -7,7 +7,7 @@ import type { Attempt } from '../game/keeperGame'
 import { ballPosAt, isSave, makeAttempt, seededRandom, stepPlayerKeeper } from '../game/keeperGame'
 import type { BallSkin, Princess as PrincessData } from '../data/roster'
 import { Ball, BlobShadow } from './Ball'
-import { Keeper } from './Keeper'
+import { Dragon } from './Dragon'
 import { Princess } from './Princess'
 import type { PrincessMode } from './Princess'
 
@@ -174,7 +174,7 @@ export function KeepMatch({
 
       {/* The dragon takes the shots in this mode, so he turns to face the goal. */}
       <group ref={shooterRef} rotation={[0, Math.PI, 0]}>
-        <Keeper />
+        <Dragon />
       </group>
 
       <Ball skin={ballSkin} ref={ballRef} />

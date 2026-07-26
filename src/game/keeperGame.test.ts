@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { KEEP, PITCH, ROUND } from './constants'
+import { KEEP, PITCH, ROUND, visibleHalfWidthAt } from './constants'
 import {
   ballPosAt,
   isSave,
@@ -36,6 +36,15 @@ describe('makeAttempt', () => {
     for (const a of attempts) {
       expect(Math.abs(a.fromX)).toBeGreaterThanOrEqual(KEEP.shooterMinX)
     }
+  })
+
+  it('keeps the whole shooter on screen', () => {
+    // Regression: at 4.0 off centre the dragon was clipped by the side of the
+    // frame. The camera fits the goal at the goal line, so anything nearer has
+    // proportionally less room — the goal's own half-width is not the limit.
+    const room = visibleHalfWidthAt(KEEP.shooterZ)
+    const furthest = KEEP.shooterMinX + KEEP.shooterSideSpread + KEEP.shooterHalfWidth
+    expect(furthest).toBeLessThan(room)
   })
 
   it('shoots from both sides', () => {

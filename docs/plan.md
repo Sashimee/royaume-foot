@@ -177,7 +177,15 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   *Attention :* la garde-robe et le menu affichent le personnage via
   `<Princess showcase>` ; ce point d'entrée devient générique.
 
-- ⬜ **Refaire le dragon.** Il est franchement moche : c'est une grosse sphère
+- ✅ **Dragon refait.** *(fait)* Cou et tête distincts, museau arrondi, grands
+  yeux amicaux avec reflet, cornes balayées, oreilles-membranes, ailes en
+  éventail (secteurs de cercle) avec doigts, pattes à trois orteils, plaques
+  ventrales, épines dorsales, queue segmentée à pointe. Au passage, le composant
+  s'appelle désormais `Dragon.tsx` et non plus `Keeper.tsx` : il joue le gardien
+  *et* le tireur, le nommer d'après un seul de ses rôles induisait en erreur.
+  L'ancienne version, pour mémoire :
+
+- ⬜ ~~**Refaire le dragon.**~~ Il était franchement moche : c'est une grosse sphère
   verte avec des ailes-galets et un museau en cône, sans cou, sans silhouette,
   et il se lit comme un blob dès qu'il s'éloigne. Il joue pourtant deux rôles
   visibles (gardien en mode tir, tireur en mode gardienne), donc il mérite un

@@ -112,6 +112,34 @@ export const ROUND = {
 export const SHOT_TIMEOUT = 4.5
 
 /**
+ * The camera, shared by both mini-games.
+ *
+ * These live here rather than in Scene.tsx so that gameplay code can *reason
+ * about what is on screen*. Anything placed nearer than the goal has far less
+ * room than the goal's own width suggests — see visibleHalfWidthAt().
+ */
+export const CAMERA = {
+  z: 11,
+  y: 4.2,
+  /** Extra half-width kept visible beyond the posts at the goal line. */
+  fitMargin: 1.0,
+} as const
+
+/**
+ * Half of the world width the camera shows at a given z, in pitch units.
+ *
+ * The frustum is set to fit the goal across the screen at the goal line, so
+ * everything closer to the camera gets proportionally less room. The shooter in
+ * keeper mode stands well in front of the goal, and putting him at the goal's
+ * own half-width would push him off the side of the screen.
+ */
+export function visibleHalfWidthAt(z: number): number {
+  const atGoal = PITCH.goalHalfWidth + CAMERA.fitMargin
+  const goalDistance = CAMERA.z - PITCH.goalZ
+  return (atGoal / goalDistance) * (CAMERA.z - z)
+}
+
+/**
  * "Gardienne du château" — the child plays *in* goal and a friendly dragon
  * shoots at them.
  *
@@ -150,9 +178,15 @@ export const KEEP = {
    * goal mouth the child needs to watch.
    */
   shooterZ: -8,
-  /** The shooter always stands at least this far off centre, on one side. */
+  /**
+   * The shooter always stands at least this far off centre, on one side. The
+   * spread is capped so his whole body stays on screen — see the test that
+   * checks it against visibleHalfWidthAt(shooterZ).
+   */
   shooterMinX: 2.5,
-  shooterSideSpread: 1.5,
+  shooterSideSpread: 0.7,
+  /** Roughly half the dragon's width, for that on-screen check. */
+  shooterHalfWidth: 0.7,
   /** How long the result is held on screen before the next shot. */
   settle: 1.6,
 } as const

@@ -85,6 +85,12 @@ ring promised.
 - **Perf budget:** no shadow maps (blob shadows instead), `dpr` capped at 2,
   crowd in one `InstancedMesh`, toon/lambert materials only. Target is a school
   Chromebook at 60 fps.
+- **Check what is actually on screen before placing anything.** The camera
+  frustum is fitted to the goal *at the goal line*, so an object nearer the
+  camera has proportionally less room: `visibleHalfWidthAt(z)` in
+  `game/constants.ts` gives the real limit, and the keeper-mode shooter is
+  asserted against it. Placing him at the goal's own half-width clipped him off
+  the side of the frame.
 - **Portrait framing.** The vertical field of view is over twice the horizontal
   one on a phone. `Scene.tsx` derives fov from the horizontal angle the goal
   needs; the castle exists to fill the band above the goal with something other

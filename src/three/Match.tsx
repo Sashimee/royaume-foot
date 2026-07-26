@@ -12,7 +12,7 @@ import { evaluateCrossing } from '../game/scoring'
 import type { ShotOutcome } from '../game/scoring'
 import type { BallSkin, Princess as PrincessData } from '../data/roster'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
-import { Keeper } from './Keeper'
+import { Dragon } from './Dragon'
 import { Princess } from './Princess'
 import type { PrincessMode } from './Princess'
 
@@ -208,7 +208,7 @@ export function Match({
       <group scale={1.2}>
         <Princess data={princess} mode={princessMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
-      <Keeper ref={keeperRef} />
+      <Dragon ref={keeperRef} />
       <Ball skin={ballSkin} ref={ballRef} />
       <BlobShadow ref={shadowRef} />
       <BallTrail history={trail} />

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import type { ReactNode } from 'react'
 import * as THREE from 'three'
-import { PITCH } from '../game/constants'
+import { CAMERA, PITCH } from '../game/constants'
 
 /**
  * The shared 3D stage.
@@ -19,7 +19,7 @@ export function Scene({ children, sky }: { children: ReactNode; sky: string }) {
       <Canvas
         dpr={[1, 2]}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-        camera={{ position: [0, 4.2, 11], fov: 50, near: 0.1, far: 120 }}
+        camera={{ position: [0, CAMERA.y, CAMERA.z], fov: 50, near: 0.1, far: 120 }}
       >
         <FitCamera />
         <hemisphereLight args={['#ffe9f6', '#5aa863', 1.05]} />
@@ -47,7 +47,7 @@ function FitCamera() {
     // Keep this tight: on a portrait phone the vertical field is more than
     // twice the horizontal one, so every extra unit of side margin buys a big
     // band of empty sky.
-    const targetHalfWidth = PITCH.goalHalfWidth + 1.0
+    const targetHalfWidth = PITCH.goalHalfWidth + CAMERA.fitMargin
     const distance = camera.position.z - PITCH.goalZ
     const halfHorizontal = Math.atan(targetHalfWidth / distance)
     const halfVertical = Math.atan(Math.tan(halfHorizontal) / aspect)
