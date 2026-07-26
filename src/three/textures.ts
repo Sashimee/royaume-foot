@@ -66,47 +66,154 @@ export function netTexture(): THREE.Texture {
 }
 
 export function ballTexture(skin: BallSkin): THREE.Texture {
-  return draw(`ball:${skin.id}`, 256, 256, (c) => {
+  // 512 rather than 256: the ball fills a good part of a phone screen when it
+  // sits at the penalty spot, and the old size showed its pixels there.
+  return draw(`ball:${skin.id}`, 512, 512, (c) => {
     c.fillStyle = skin.base
-    c.fillRect(0, 0, 256, 256)
+    c.fillRect(0, 0, 512, 512)
     c.fillStyle = skin.accent
     c.strokeStyle = skin.accent
+    c.lineJoin = 'round'
 
+    // Motifs stay in the middle band: the texture is wrapped on a sphere, so
+    // anything near the top or bottom edge is squeezed into a smear at a pole.
     switch (skin.pattern) {
       case 'classic':
-        // Rough panel spots — a stylised football, not a real one.
         for (const [x, y] of [
-          [40, 60],
-          [130, 40],
-          [200, 110],
-          [80, 160],
-          [180, 210],
+          [80, 150], [250, 100], [400, 190], [160, 320], [360, 380], [60, 420],
         ]) {
-          polygon(c, x, y, 26, 5)
+          polygon(c, x, y, 52, 5)
         }
         break
+
       case 'hearts':
-        scatter(12, (x, y, s) => heart(c, x, y, s))
+        scatter(14, (x, y, s) => {
+          c.fillStyle = s > 22 ? skin.accent : '#ffb3d9'
+          heart(c, x, y, s)
+        })
         break
+
+      case 'flowers':
+        scatter(11, (x, y, s) => {
+          for (let p = 0; p < 5; p++) {
+            const a = (p / 5) * Math.PI * 2
+            c.fillStyle = skin.accent
+            circle(c, x + Math.cos(a) * s * 0.8, y + Math.sin(a) * s * 0.8, s * 0.55)
+          }
+          c.fillStyle = '#ffd84d'
+          circle(c, x, y, s * 0.45)
+        })
+        break
+
       case 'stars':
-        scatter(14, (x, y, s) => star(c, x, y, s, 5))
+        scatter(16, (x, y, s) => {
+          c.fillStyle = s > 22 ? '#fff3b0' : skin.accent
+          star(c, x, y, s * 1.3, 5)
+        })
         break
-      case 'rainbow':
-        for (let i = 0; i < 6; i++) {
-          c.strokeStyle = ['#ff6b8b', '#ffab5c', '#ffe066', '#7ed67e', '#7bd3ff', '#c07bff'][i]
-          c.lineWidth = 14
+
+      case 'bubbles':
+        scatter(15, (x, y, s) => {
+          c.fillStyle = skin.accent
+          c.globalAlpha = 0.55
+          circle(c, x, y, s * 1.4)
+          c.globalAlpha = 1
+          c.fillStyle = '#ffffff'
+          circle(c, x - s * 0.45, y - s * 0.45, s * 0.35)
+        })
+        break
+
+      case 'rainbow': {
+        const bands = ['#ff6b8b', '#ffab5c', '#ffe066', '#7ed67e', '#7bd3ff', '#c07bff']
+        c.lineWidth = 30
+        bands.forEach((colour, i) => {
+          c.strokeStyle = colour
           c.beginPath()
-          c.arc(128, 300, 190 - i * 16, Math.PI * 1.15, Math.PI * 1.85)
+          c.arc(256, 620, 400 - i * 32, Math.PI * 1.12, Math.PI * 1.88)
           c.stroke()
-        }
+        })
         break
+      }
+
       case 'unicorn':
-        scatter(10, (x, y, s) => star(c, x, y, s, 4))
-        c.fillStyle = '#ffd84d'
-        star(c, 128, 128, 34, 4)
+        scatter(13, (x, y, s) => {
+          c.fillStyle = ['#c07bff', '#ff8ad1', '#7bd3ff'][Math.floor(s) % 3]
+          sparkle(c, x, y, s * 1.5)
+        })
+        break
+
+      case 'melon':
+        // Rind at the poles, flesh across the middle, pips scattered on it.
+        c.fillStyle = skin.accent
+        c.fillRect(0, 0, 512, 96)
+        c.fillRect(0, 416, 512, 96)
+        c.fillStyle = '#f6f3d8'
+        c.fillRect(0, 96, 512, 22)
+        c.fillRect(0, 394, 512, 22)
+        scatter(18, (x, y, s) => {
+          if (y < 140 || y > 380) return
+          c.fillStyle = '#3a2a1c'
+          c.beginPath()
+          c.ellipse(x, y, s * 0.32, s * 0.5, 0.4, 0, Math.PI * 2)
+          c.fill()
+        })
+        break
+
+      case 'galaxy':
+        scatter(26, (x, y, s) => {
+          c.fillStyle = s > 24 ? '#ffffff' : skin.accent
+          star(c, x, y, s * 0.7, 4)
+        })
+        c.globalAlpha = 0.35
+        c.fillStyle = '#7c5cff'
+        circle(c, 180, 250, 90)
+        c.fillStyle = '#ff8ad1'
+        circle(c, 350, 300, 60)
+        c.globalAlpha = 1
+        break
+
+      case 'cake':
+        // Icing drip across the top, sprinkles below.
+        c.fillStyle = skin.accent
+        c.beginPath()
+        c.moveTo(0, 0)
+        c.lineTo(512, 0)
+        c.lineTo(512, 170)
+        for (let x = 512; x >= 0; x -= 64) {
+          c.quadraticCurveTo(x - 32, 220, x - 64, 170)
+        }
+        c.closePath()
+        c.fill()
+        scatter(22, (x, y, s) => {
+          if (y < 230) return
+          c.fillStyle = ['#ff6b8b', '#ffd84d', '#7ed67e', '#7bd3ff'][Math.floor(s) % 4]
+          c.save()
+          c.translate(x, y)
+          c.rotate(s)
+          c.fillRect(-s * 0.6, -s * 0.18, s * 1.2, s * 0.36)
+          c.restore()
+        })
         break
     }
   })
+}
+
+function circle(c: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  c.beginPath()
+  c.arc(x, y, r, 0, Math.PI * 2)
+  c.fill()
+}
+
+/** A four-pointed twinkle, the shape everyone reads as "sparkle". */
+function sparkle(c: CanvasRenderingContext2D, x: number, y: number, s: number) {
+  c.beginPath()
+  c.moveTo(x, y - s)
+  c.quadraticCurveTo(x + s * 0.18, y - s * 0.18, x + s, y)
+  c.quadraticCurveTo(x + s * 0.18, y + s * 0.18, x, y + s)
+  c.quadraticCurveTo(x - s * 0.18, y + s * 0.18, x - s, y)
+  c.quadraticCurveTo(x - s * 0.18, y - s * 0.18, x, y - s)
+  c.closePath()
+  c.fill()
 }
 
 function scatter(count: number, paint: (x: number, y: number, s: number) => void) {
@@ -117,7 +224,7 @@ function scatter(count: number, paint: (x: number, y: number, s: number) => void
     seed = (seed * 1103515245 + 12345) % 2147483648
     return seed / 2147483648
   }
-  for (let i = 0; i < count; i++) paint(rand() * 236 + 10, rand() * 236 + 10, 10 + rand() * 10)
+  for (let i = 0; i < count; i++) paint(rand() * 452 + 30, rand() * 452 + 30, 16 + rand() * 14)
 }
 
 function polygon(c: CanvasRenderingContext2D, x: number, y: number, r: number, sides: number) {

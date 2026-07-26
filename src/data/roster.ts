@@ -198,16 +198,31 @@ export interface BallSkin {
   base: string
   accent: string
   /** Drives the procedural texture drawn onto the ball. */
-  pattern: 'classic' | 'hearts' | 'rainbow' | 'stars' | 'unicorn'
+  pattern:
+    | 'classic'
+    | 'hearts'
+    | 'flowers'
+    | 'stars'
+    | 'bubbles'
+    | 'rainbow'
+    | 'unicorn'
+    | 'melon'
+    | 'galaxy'
+    | 'cake'
   unlockStars: number
 }
 
 export const BALLS: BallSkin[] = [
   { id: 'classic', badge: '⚽', base: '#ffffff', accent: '#2b2b3d', pattern: 'classic', unlockStars: 0 },
-  { id: 'hearts', badge: '💗', base: '#ffffff', accent: '#ff5fa8', pattern: 'hearts', unlockStars: 2 },
+  { id: 'hearts', badge: '💗', base: '#fff5fa', accent: '#ff5fa8', pattern: 'hearts', unlockStars: 2 },
+  { id: 'flowers', badge: '🌸', base: '#fffdf2', accent: '#ff8ac0', pattern: 'flowers', unlockStars: 3 },
   { id: 'stars', badge: '⭐', base: '#3b2d6b', accent: '#ffd84d', pattern: 'stars', unlockStars: 5 },
-  { id: 'rainbow', badge: '🌈', base: '#ffffff', accent: '#7bd3ff', pattern: 'rainbow', unlockStars: 8 },
+  { id: 'bubbles', badge: '🫧', base: '#eaf8ff', accent: '#5cc8ff', pattern: 'bubbles', unlockStars: 7 },
+  { id: 'rainbow', badge: '🌈', base: '#ffffff', accent: '#7bd3ff', pattern: 'rainbow', unlockStars: 9 },
   { id: 'unicorn', badge: '🦄', base: '#fff0fb', accent: '#c07bff', pattern: 'unicorn', unlockStars: 12 },
+  { id: 'melon', badge: '🍉', base: '#ff6b7d', accent: '#2f9e4f', pattern: 'melon', unlockStars: 15 },
+  { id: 'galaxy', badge: '🌌', base: '#1e1b4b', accent: '#c4b5fd', pattern: 'galaxy', unlockStars: 18 },
+  { id: 'cake', badge: '🧁', base: '#fff1e6', accent: '#ff9ec4', pattern: 'cake', unlockStars: 22 },
 ]
 
 export function characterById(id: string): Character {

@@ -109,6 +109,22 @@ pet welded to the character reads as a prop, one that catches up reads as alive.
 It clamps itself to `visibleHalfWidthAt(z)`, because following a player who is
 themselves near the edge of frame walks the pet straight out of shot.
 
+## What a playtest changed
+
+A child has played this and loves it — the tuning holds. What it exposed was
+the *wardrobe*, not the game:
+
+- a long scrolling column gave no sign there was more below the fold, so items
+  down there may as well not have existed. Anything scrollable uses
+  `ScrollArea`, which fades its bottom edge and floats a nudge arrow while
+  there is more to see.
+- princesses and knights in one grid read as one undifferentiated pile; they
+  are separate sections now, behind tabs with the balls, pitches and mascots.
+
+Ball textures are drawn at 512, not 256 — the ball fills a good part of a phone
+screen at the penalty spot — and motifs stay in the middle band of the image,
+because a sphere squeezes anything near the top or bottom edge into a smear.
+
 ## Rules that are load-bearing
 
 - **`src/game/*` must never import three.** That separation is what lets the

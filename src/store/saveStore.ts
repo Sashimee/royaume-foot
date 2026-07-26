@@ -19,6 +19,8 @@ export interface SaveState {
   setStadium: (id: string) => void
   setMascot: (id: string) => void
   toggleMute: () => void
+  /** Wipe progress and every choice, back to a first-launch state. */
+  reset: () => void
 }
 
 interface Persisted {
@@ -92,6 +94,16 @@ export const useSave = create<SaveState>((set, get) => ({
   },
   setMascot: (id) => {
     set({ mascotId: id })
+    save(get)
+  },
+  reset: () => {
+    set({
+      stars: 0,
+      characterId: CHARACTERS[0].id,
+      ballId: BALLS[0].id,
+      stadiumId: STADIUMS[0].id,
+      mascotId: MASCOTS[0].id,
+    })
     save(get)
   },
   toggleMute: () => {

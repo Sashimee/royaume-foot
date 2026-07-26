@@ -216,18 +216,27 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   Le gardien devient une entrée de données (`data/keepers.ts`) et un composant
   par espèce, exactement comme les personnages jouables : le mode tir ne doit
   pas savoir qui garde la cage.
-- ⬜ **Remise à zéro des étoiles.** Pouvoir tout recommencer depuis 0 —
+- ✅ **Remise à zéro des étoiles.** *(fait)* Modale de confirmation plein
+  écran — l'option sûre est le gros bouton vert, la destructive est discrète.
+  Cahier des charges initial :
+- ⬜ ~~**Remise à zéro des étoiles.**~~ Pouvoir tout recommencer depuis 0 —
   redécouvrir les déblocages est une partie du plaisir. Doit être protégé par
   une confirmation : c'est destructif, et à 6 ans on appuie partout.
-- ⬜ **Passe UI/UX du vestiaire :**
+- ✅ **Passe UI/UX du vestiaire.** *(fait)* Onglets personnages / ballons /
+  terrains / amis, princesses et chevaliers en sections séparées, et une
+  affordance de défilement (dégradé + flèche) qui disparaît en bas de liste.
+  Cahier des charges initial :
+- ⬜ ~~**Passe UI/UX du vestiaire :**~~
   - **on ne voit pas qu'on peut faire défiler** la liste des skins — il faut une
     affordance (dégradé de bord, flèche, ou une mise en page qui ne coupe pas
     une rangée au milieu) ;
   - **séparer princesses et chevaliers** en deux sections distinctes ;
   - **des onglets** (personnages / ballons / terrains / amis) plutôt qu'une
     seule longue colonne.
-- ⬜ **Plus de skins de ballon, et plus jolis.** Les cinq actuels sont dessinés
-  trop grossièrement au canvas 2D.
+- ✅ **10 ballons, redessinés.** *(fait)* Classique, cœurs, fleurs, étoiles,
+  bulles, arc-en-ciel, licorne, pastèque, galaxie, gâteau — texture 512 px au
+  lieu de 256, motifs cantonnés à la bande centrale (aux pôles la sphère les
+  écrase en bouillie).
 
 **Phase 4 — Fête finale (2 j)**
 Casse-tour, Coupe du Royaume + trophée, PWA (manifest + service worker,

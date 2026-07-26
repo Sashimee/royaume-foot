@@ -55,6 +55,12 @@ const en = {
   'result.stars': 'stars caught',
   'wardrobe.stadiums': 'My pitch',
   'wardrobe.mascots': 'My friend',
+  'wardrobe.princesses': 'Princesses',
+  'wardrobe.knights': 'Knights',
+  'reset.button': 'Start over',
+  'reset.confirm': 'Give back all your stars?',
+  'reset.keep': 'Keep them',
+  'reset.doIt': 'Start over',
 } as const
 
 export type TranslationKey = keyof typeof en
@@ -98,6 +104,12 @@ const fr: Table = {
   'result.stars': 'étoiles attrapées',
   'wardrobe.stadiums': 'Mon terrain',
   'wardrobe.mascots': 'Mon copain',
+  'wardrobe.princesses': 'Princesses',
+  'wardrobe.knights': 'Chevaliers',
+  'reset.button': 'Tout recommencer',
+  'reset.confirm': 'Rendre toutes tes étoiles ?',
+  'reset.keep': 'Je les garde',
+  'reset.doIt': 'Recommencer',
 }
 
 const de: Table = {
@@ -137,6 +149,12 @@ const de: Table = {
   'result.stars': 'Sterne gefangen',
   'wardrobe.stadiums': 'Mein Platz',
   'wardrobe.mascots': 'Mein Freund',
+  'wardrobe.princesses': 'Prinzessinnen',
+  'wardrobe.knights': 'Ritter',
+  'reset.button': 'Neu anfangen',
+  'reset.confirm': 'Alle Sterne zurückgeben?',
+  'reset.keep': 'Behalten',
+  'reset.doIt': 'Neu anfangen',
 }
 
 const es: Table = {
@@ -176,6 +194,12 @@ const es: Table = {
   'result.stars': 'estrellas atrapadas',
   'wardrobe.stadiums': 'Mi campo',
   'wardrobe.mascots': 'Mi amigo',
+  'wardrobe.princesses': 'Princesas',
+  'wardrobe.knights': 'Caballeros',
+  'reset.button': 'Empezar de nuevo',
+  'reset.confirm': '¿Devolver todas tus estrellas?',
+  'reset.keep': 'Me las quedo',
+  'reset.doIt': 'Empezar de nuevo',
 }
 
 const it: Table = {
@@ -215,6 +239,12 @@ const it: Table = {
   'result.stars': 'stelle prese',
   'wardrobe.stadiums': 'Il mio campo',
   'wardrobe.mascots': 'Il mio amico',
+  'wardrobe.princesses': 'Principesse',
+  'wardrobe.knights': 'Cavalieri',
+  'reset.button': 'Ricominciare',
+  'reset.confirm': 'Restituire tutte le stelle?',
+  'reset.keep': 'Le tengo',
+  'reset.doIt': 'Ricominciare',
 }
 
 const pt: Table = {
@@ -254,6 +284,12 @@ const pt: Table = {
   'result.stars': 'estrelas apanhadas',
   'wardrobe.stadiums': 'O meu campo',
   'wardrobe.mascots': 'O meu amigo',
+  'wardrobe.princesses': 'Princesas',
+  'wardrobe.knights': 'Cavaleiros',
+  'reset.button': 'Recomeçar',
+  'reset.confirm': 'Devolver todas as estrelas?',
+  'reset.keep': 'Fico com elas',
+  'reset.doIt': 'Recomeçar',
 }
 
 export const TRANSLATIONS: Record<Lang, Table> = { en, fr, de, es, it, pt }

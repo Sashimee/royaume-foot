@@ -188,3 +188,59 @@ test.describe('Course aux étoiles', () => {
     await expect(page.getByRole('button', { name: RUN_MODE })).toBeVisible()
   })
 })
+
+test.describe('wardrobe', () => {
+  const DRESS = /habiller|Dress up|Anziehen|Vestir|Vestire/
+
+  test('separates princesses from knights and shows there is more to scroll', async ({ page }) => {
+    await page.goto('./')
+    await page.getByRole('button', { name: DRESS }).first().click()
+
+    await expect(page.getByRole('heading', { name: /Princesses/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Knights|Chevaliers/i })).toBeVisible()
+
+    // A playtest showed a child had no idea the list continued below the fold.
+    await expect(page.getByTestId('scroll-more')).toBeVisible()
+  })
+
+  test('keeps each kind of item behind its own tab', async ({ page }) => {
+    await page.goto('./')
+    await page.getByRole('button', { name: DRESS }).first().click()
+
+    await expect(page.getByRole('button', { name: 'Rosalie' })).toBeVisible()
+
+    await page.getByRole('tab', { name: /my ball|mon ballon/i }).click()
+    await expect(page.getByRole('button', { name: 'Rosalie' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: /my ball|mon ballon/i })).toBeVisible()
+
+    await page.getByRole('tab', { name: /my pitch|mon terrain/i }).click()
+    await expect(page.getByRole('heading', { name: /my pitch|mon terrain/i })).toBeVisible()
+  })
+
+  test('can start over, but only after confirming', async ({ page }) => {
+    await page.goto('./')
+    await page.evaluate(() =>
+      localStorage.setItem(
+        'royaume-foot:save:v1',
+        JSON.stringify({ stars: 25, characterId: 'rosalie', ballId: 'classic', stadiumId: 'prairie', mascotId: 'chat', muted: true }),
+      ),
+    )
+    await page.reload()
+    await page.getByRole('button', { name: DRESS }).first().click()
+    await page.getByRole('tab', { name: /my friend|mon copain/i }).click()
+
+    await page.getByRole('button', { name: /start over|recommencer/i }).first().click()
+
+    // Backing out must leave the stars alone.
+    await page.getByRole('button', { name: /keep them|je les garde/i }).click()
+    expect(await savedStars(page)).toBe(25)
+
+    await page.getByRole('button', { name: /start over|recommencer/i }).first().click()
+    await page.getByRole('button', { name: /start over|recommencer/i }).last().click()
+    await expect.poll(async () => savedStars(page)).toBe(0)
+  })
+})
+
+async function savedStars(page: Page): Promise<number> {
+  return page.evaluate(() => JSON.parse(localStorage.getItem('royaume-foot:save:v1') ?? '{}').stars ?? -1)
+}

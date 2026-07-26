@@ -69,11 +69,14 @@ describe('stadiums', () => {
     }
   })
 
-  it('keeps a reward dangling past the last character and ball', () => {
-    // The furthest unlock should be a stadium, so the teaser never runs dry
-    // while a child still has something to earn.
-    const highestCharacterOrBall = Math.max(...[...CHARACTERS, ...BALLS].map((i) => i.unlockStars))
-    expect(nextUnlock(highestCharacterOrBall)).not.toBeNull()
+  it('never leaves a long stretch with nothing to earn', () => {
+    // The real property, rather than "the last unlock is a stadium": a child
+    // should always have a reward within a couple of rounds. A ten-star gap is
+    // a grind at this age, whatever sits on either side of it.
+    const thresholds = [...new Set([...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS].map((i) => i.unlockStars))]
+      .sort((a, b) => a - b)
+    const gaps = thresholds.slice(1).map((n, i) => n - thresholds[i])
+    expect(Math.max(...gaps)).toBeLessThanOrEqual(6)
   })
 })
 
