@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BALLS, CHARACTERS, KNIGHTS, PRINCESSES, characterById, nextUnlock } from './roster'
+import { STADIUMS, stadiumById } from './stadiums'
 
 describe('roster', () => {
   it('offers both kinds of character', () => {
@@ -35,7 +36,42 @@ describe('roster', () => {
   })
 
   it('has nothing left to unlock once every threshold is passed', () => {
-    const highest = Math.max(...[...CHARACTERS, ...BALLS].map((i) => i.unlockStars))
+    // Every kind of unlockable counts, stadiums included — the teaser reads
+    // from all of them.
+    const highest = Math.max(...[...CHARACTERS, ...BALLS, ...STADIUMS].map((i) => i.unlockStars))
     expect(nextUnlock(highest)).toBeNull()
+  })
+})
+
+describe('stadiums', () => {
+  it('gives a free place to play from the first launch', () => {
+    expect(STADIUMS.filter((s) => s.unlockStars === 0).length).toBeGreaterThan(0)
+  })
+
+  it('has unique ids', () => {
+    const ids = STADIUMS.map((s) => s.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('falls back to a playable stadium for an unknown id', () => {
+    expect(stadiumById('nowhere').unlockStars).toBe(0)
+  })
+
+  it('gives every stadium a full palette', () => {
+    // A missing colour renders as black, which is very obvious in play and very
+    // easy to miss when adding an entry.
+    for (const s of STADIUMS) {
+      for (const [key, value] of Object.entries(s)) {
+        if (key === 'unlockStars' || key === 'id' || key === 'badge') continue
+        expect(typeof value === 'string' && value.length > 0).toBe(true)
+      }
+    }
+  })
+
+  it('keeps a reward dangling past the last character and ball', () => {
+    // The furthest unlock should be a stadium, so the teaser never runs dry
+    // while a child still has something to earn.
+    const highestCharacterOrBall = Math.max(...[...CHARACTERS, ...BALLS].map((i) => i.unlockStars))
+    expect(nextUnlock(highestCharacterOrBall)).not.toBeNull()
   })
 })

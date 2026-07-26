@@ -161,7 +161,10 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   Rien à éviter, rien qui punit — la difficulté est uniquement dans
   l'écartement des étoiles. Durée fixe (24 s) avec barre de temps, étoiles
   dorées qui valent double, harnais de difficulté et tests e2e.
-- ⬜ 3 stades, mascottes, carte du royaume.
+- ✅ **4 stades** (prairie, plage, royaume des glaces, nuit étoilée) : une
+  palette par stade, aucune géométrie nouvelle, déblocage par étoiles et
+  sélection dans le vestiaire.
+- ⬜ Mascottes, carte du royaume.
 
 > **Écart :** un seul des deux mini-jeux prévus. Livrer le second à moitié aurait
 > coûté la qualité du premier ; la trajectoire du ballon en mode gardienne est

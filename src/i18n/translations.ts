@@ -53,6 +53,7 @@ const en = {
   'mode.run': 'Star run',
   'run.hint': 'Slide to catch the stars',
   'result.stars': 'stars caught',
+  'wardrobe.stadiums': 'My pitch',
 } as const
 
 export type TranslationKey = keyof typeof en
@@ -94,6 +95,7 @@ const fr: Table = {
   'mode.run': 'Course aux étoiles',
   'run.hint': 'Glisse pour attraper les étoiles',
   'result.stars': 'étoiles attrapées',
+  'wardrobe.stadiums': 'Mon terrain',
 }
 
 const de: Table = {
@@ -131,6 +133,7 @@ const de: Table = {
   'mode.run': 'Sternenlauf',
   'run.hint': 'Schiebe zu den Sternen',
   'result.stars': 'Sterne gefangen',
+  'wardrobe.stadiums': 'Mein Platz',
 }
 
 const es: Table = {
@@ -168,6 +171,7 @@ const es: Table = {
   'mode.run': 'Carrera de estrellas',
   'run.hint': 'Desliza para atrapar las estrellas',
   'result.stars': 'estrellas atrapadas',
+  'wardrobe.stadiums': 'Mi campo',
 }
 
 const it: Table = {
@@ -205,6 +209,7 @@ const it: Table = {
   'mode.run': 'Corsa alle stelle',
   'run.hint': 'Scorri per prendere le stelle',
   'result.stars': 'stelle prese',
+  'wardrobe.stadiums': 'Il mio campo',
 }
 
 const pt: Table = {
@@ -242,6 +247,7 @@ const pt: Table = {
   'mode.run': 'Corrida às estrelas',
   'run.hint': 'Desliza para apanhar as estrelas',
   'result.stars': 'estrelas apanhadas',
+  'wardrobe.stadiums': 'O meu campo',
 }
 
 export const TRANSLATIONS: Record<Lang, Table> = { en, fr, de, es, it, pt }

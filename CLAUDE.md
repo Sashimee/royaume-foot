@@ -40,7 +40,7 @@ src/
 ├── ui/        # DOM overlay: HUD, wardrobe, result. Tailwind, not 3D.
 ├── store/     # zustand: gameStore (round) + saveStore (persisted)
 ├── audio/     # Web Audio synthesis, no files
-├── data/      # roster: characters (princess | knight) and ball skins, as data
+├── data/      # roster (characters, balls) and stadiums — all plain data
 └── i18n/      # six flat key→string maps, English fallback, no interpolation
 ```
 
@@ -87,6 +87,19 @@ let a princess be given a plume.
   expression.
 - `saveStore` persists `characterId` but still reads the old `princessId` field,
   so upgrading does not wipe a child's save.
+
+## Stadiums
+
+`data/stadiums.ts` is **a palette and nothing else**. The pitch, castle and
+stands are the same geometry everywhere; a stadium swaps colours. That is why a
+new place to play costs one entry and no new meshes, and why the star economy
+can hand out something that changes how the game *looks* rather than adding
+another thing to manage.
+
+Anything colour-tinted has to be threaded through, not hard-coded — the grass
+texture cache is keyed on its colours (a key of just "grass" hands the beach the
+prairie's stripes), and the blob shadow takes a tint, because a green shadow on
+snow reads as a sticker.
 
 ## Rules that are load-bearing
 

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { BALLS, CHARACTERS } from '../data/roster'
+import { STADIUMS } from '../data/stadiums'
 
 const KEY = 'royaume-foot:save:v1'
 
@@ -8,10 +9,12 @@ export interface SaveState {
   stars: number
   characterId: string
   ballId: string
+  stadiumId: string
   muted: boolean
   addStars: (n: number) => void
   setCharacter: (id: string) => void
   setBall: (id: string) => void
+  setStadium: (id: string) => void
   toggleMute: () => void
 }
 
@@ -19,6 +22,7 @@ interface Persisted {
   stars: number
   characterId: string
   ballId: string
+  stadiumId: string
   muted: boolean
 }
 
@@ -27,6 +31,7 @@ function load(): Persisted {
     stars: 0,
     characterId: CHARACTERS[0].id,
     ballId: BALLS[0].id,
+    stadiumId: STADIUMS[0].id,
     muted: false,
   }
   try {
@@ -44,6 +49,7 @@ function load(): Persisted {
         ? (parsed.characterId ?? parsed.princessId)!
         : fallback.characterId,
       ballId: BALLS.some((b) => b.id === parsed.ballId) ? parsed.ballId! : fallback.ballId,
+      stadiumId: STADIUMS.some((s) => s.id === parsed.stadiumId) ? parsed.stadiumId! : fallback.stadiumId,
       muted: parsed.muted === true,
     }
   } catch {
@@ -74,6 +80,10 @@ export const useSave = create<SaveState>((set, get) => ({
     set({ ballId: id })
     save(get)
   },
+  setStadium: (id) => {
+    set({ stadiumId: id })
+    save(get)
+  },
   toggleMute: () => {
     set({ muted: !get().muted })
     save(get)
@@ -81,8 +91,8 @@ export const useSave = create<SaveState>((set, get) => ({
 }))
 
 function save(get: () => SaveState) {
-  const { stars, characterId, ballId, muted } = get()
-  persist({ stars, characterId, ballId, muted })
+  const { stars, characterId, ballId, stadiumId, muted } = get()
+  persist({ stars, characterId, ballId, stadiumId, muted })
 }
 
 /**

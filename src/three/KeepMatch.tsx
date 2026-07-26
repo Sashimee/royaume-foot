@@ -38,6 +38,7 @@ export function KeepMatch({
   api,
   character,
   ballSkin,
+  shadowColour,
   frozen,
   cheerUntil,
   onResult,
@@ -45,6 +46,7 @@ export function KeepMatch({
   api: RefObject<KeepHandle | null>
   character: CharacterData
   ballSkin: BallSkin
+  shadowColour: string
   frozen: boolean
   cheerUntil: RefObject<number>
   onResult: (saved: boolean) => void
@@ -178,7 +180,7 @@ export function KeepMatch({
       </group>
 
       <Ball skin={ballSkin} ref={ballRef} />
-      <BlobShadow ref={shadowRef} />
+      <BlobShadow ref={shadowRef} colour={shadowColour} />
 
       {/* The telegraph. Two things keep it readable:
           - white-cyan, not gold, so it is never mistaken for a decorative crown;

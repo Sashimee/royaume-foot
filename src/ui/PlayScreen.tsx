@@ -7,6 +7,7 @@ import type { GameMode } from '../store/gameStore'
 import { shoutKeyFor, useGame } from '../store/gameStore'
 import { useSave } from '../store/saveStore'
 import { ballById, characterById } from '../data/roster'
+import { stadiumById } from '../data/stadiums'
 import { useT } from '../i18n/useLang'
 import { Scene } from '../three/Scene'
 import { Pitch } from '../three/Pitch'
@@ -23,8 +24,6 @@ import { RunHud } from './RunHud'
 import { ResultScreen } from './ResultScreen'
 import { IconButton } from './ui'
 
-const SKY = 'linear-gradient(180deg, #7fd1ff 0%, #c9e9ff 45%, #ffe6f4 100%)'
-
 export function PlayScreen() {
   const t = useT()
   const api = useRef<MatchHandle | null>(null)
@@ -34,6 +33,7 @@ export function PlayScreen() {
 
   const character = useSave((s) => characterById(s.characterId))
   const ballSkin = useSave((s) => ballById(s.ballId))
+  const stadium = useSave((s) => stadiumById(s.stadiumId))
   const addStars = useSave((s) => s.addStars)
 
   const screen = useGame((s) => s.screen)
@@ -121,14 +121,15 @@ export function PlayScreen() {
 
   return (
     <div className="absolute inset-0">
-      <Scene sky={SKY}>
-        <Pitch showTargets={mode === 'shoot'} showGoal={mode !== 'run'} />
+      <Scene sky={stadium.sky}>
+        <Pitch stadium={stadium} showTargets={mode === 'shoot'} showGoal={mode !== 'run'} />
         <Crowd cheerUntil={cheerUntil} />
         {mode === 'shoot' ? (
           <Match
             api={api}
             character={character}
             ballSkin={ballSkin}
+            shadowColour={stadium.shadow}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onOutcome={handleOutcome}
@@ -138,6 +139,7 @@ export function PlayScreen() {
             api={keepApi}
             character={character}
             ballSkin={ballSkin}
+            shadowColour={stadium.shadow}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onResult={handleSave}
@@ -147,6 +149,7 @@ export function PlayScreen() {
             api={runApi}
             character={character}
             ballSkin={ballSkin}
+            shadowColour={stadium.shadow}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onCollect={handleCollect}

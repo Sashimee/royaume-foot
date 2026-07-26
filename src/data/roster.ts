@@ -1,3 +1,5 @@
+import { STADIUMS } from './stadiums'
+
 /**
  * The wardrobe catalogue.
  *
@@ -218,7 +220,7 @@ export function ballById(id: string): BallSkin {
 /** Everything the child has not unlocked yet, cheapest first — used for the
  *  "next reward" teaser on the result screen. */
 export function nextUnlock(stars: number): { badge: string; unlockStars: number } | null {
-  const locked = [...CHARACTERS, ...BALLS]
+  const locked = [...CHARACTERS, ...BALLS, ...STADIUMS]
     .filter((item) => item.unlockStars > stars)
     .sort((a, b) => a.unlockStars - b.unlockStars)
   return locked[0] ?? null

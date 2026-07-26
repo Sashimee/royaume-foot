@@ -32,6 +32,7 @@ export function RunMatch({
   api,
   character,
   ballSkin,
+  shadowColour,
   frozen,
   cheerUntil,
   onCollect,
@@ -40,6 +41,7 @@ export function RunMatch({
   api: RefObject<RunHandle | null>
   character: CharacterData
   ballSkin: BallSkin
+  shadowColour: string
   frozen: boolean
   cheerUntil: RefObject<number>
   onCollect: (big: boolean) => void
@@ -145,7 +147,7 @@ export function RunMatch({
       </group>
 
       <Ball skin={ballSkin} ref={ballRef} />
-      <BlobShadow ref={shadowRef} />
+      <BlobShadow ref={shadowRef} colour={shadowColour} />
 
       <group ref={starsRef}>
         {Array.from({ length: POOL }, (_, i) => (

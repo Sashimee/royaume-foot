@@ -41,6 +41,7 @@ export function Match({
   api,
   character,
   ballSkin,
+  shadowColour,
   frozen,
   cheerUntil,
   onOutcome,
@@ -48,6 +49,7 @@ export function Match({
   api: RefObject<MatchHandle | null>
   character: CharacterData
   ballSkin: BallSkin
+  shadowColour: string
   /** True once the round is over — no further shots are accepted. */
   frozen: boolean
   cheerUntil: RefObject<number>
@@ -210,7 +212,7 @@ export function Match({
       </group>
       <Dragon ref={keeperRef} />
       <Ball skin={ballSkin} ref={ballRef} />
-      <BlobShadow ref={shadowRef} />
+      <BlobShadow ref={shadowRef} colour={shadowColour} />
       <BallTrail history={trail} />
     </group>
   )

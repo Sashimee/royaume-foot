@@ -30,11 +30,20 @@ export function Ball({ skin, ref }: { skin: BallSkin; ref: RefObject<THREE.Group
  * over the whole scene; this costs one transparent circle, and in a flat
  * cartoon style it actually reads better.
  */
-export function BlobShadow({ ref, radius = 0.34 }: { ref: RefObject<THREE.Mesh | null>; radius?: number }) {
+export function BlobShadow({
+  ref,
+  radius = 0.34,
+  colour = '#2f7a3a',
+}: {
+  ref: RefObject<THREE.Mesh | null>
+  radius?: number
+  /** Tinted per stadium — a green shadow on snow or sand looks like a sticker. */
+  colour?: string
+}) {
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
       <circleGeometry args={[radius, 20]} />
-      <meshBasicMaterial color="#2f7a3a" transparent opacity={0.28} depthWrite={false} />
+      <meshBasicMaterial color={colour} transparent opacity={0.28} depthWrite={false} />
     </mesh>
   )
 }

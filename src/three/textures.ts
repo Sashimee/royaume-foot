@@ -27,11 +27,16 @@ function draw(key: string, w: number, h: number, paint: (c: CanvasRenderingConte
   return tex
 }
 
-/** Mown stripes, running across the pitch so they read as distance. */
-export function grassTexture(): THREE.Texture {
-  const tex = draw('grass', 64, 256, (c) => {
+/**
+ * Mown stripes, running across the pitch so they read as distance.
+ *
+ * The cache key includes the colours: stadiums differ only by palette, and a
+ * key of just "grass" would hand the beach the prairie's texture.
+ */
+export function grassTexture(light: string, dark: string): THREE.Texture {
+  const tex = draw(`grass:${light}:${dark}`, 64, 256, (c) => {
     for (let i = 0; i < 8; i++) {
-      c.fillStyle = i % 2 === 0 ? '#63c86b' : '#57bb60'
+      c.fillStyle = i % 2 === 0 ? light : dark
       c.fillRect(0, i * 32, 64, 32)
     }
   })

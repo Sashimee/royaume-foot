@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { PITCH } from '../game/constants'
 import { TARGETS } from '../game/scoring'
 import { grassTexture, netTexture } from './textures'
+import type { Stadium } from '../data/stadiums'
 
 /**
  * The stadium: grass, goal, netting and the bonus crowns. Everything here is
@@ -10,10 +11,18 @@ import { grassTexture, netTexture } from './textures'
  * the draw calls.
  */
 export function Pitch({
+  stadium,
   showTargets = true,
   showGoal = true,
-}: { showTargets?: boolean; showGoal?: boolean } = {}) {
-  const grass = useMemo(() => grassTexture(), [])
+}: {
+  stadium: Stadium
+  showTargets?: boolean
+  showGoal?: boolean
+}) {
+  const grass = useMemo(
+    () => grassTexture(stadium.grassLight, stadium.grassDark),
+    [stadium.grassLight, stadium.grassDark],
+  )
   const net = useMemo(() => netTexture(), [])
 
   const { goalZ, goalHalfWidth, goalHeight, postRadius } = PITCH
@@ -40,7 +49,7 @@ export function Pitch({
       {/* The runner mini-game has no goal to aim at, and stars flying through
           the frame on their way to the child looked like a bug. */}
       {showGoal && (
-        <Goal goalZ={goalZ} halfWidth={goalHalfWidth} height={goalHeight} postRadius={postRadius} net={net} />
+        <Goal goalZ={goalZ} halfWidth={goalHalfWidth} height={goalHeight} postRadius={postRadius} net={net} netTint={stadium.net} />
       )}
 
       {/* Bonus crowns are a shooting-mode rule. In keeper mode they are not
@@ -51,8 +60,8 @@ export function Pitch({
           <Crown key={t.id} x={t.x} y={t.y} z={goalZ + 0.35} radius={t.radius} />
         ))}
 
-      <Stands />
-      <Castle />
+      <Stands stadium={stadium} />
+      <Castle stadium={stadium} />
     </group>
   )
 }
@@ -65,29 +74,29 @@ export function Pitch({
  * leaves a tall band above it. Towers fill that band with the game's own
  * subject matter instead of empty sky.
  */
-function Castle() {
+function Castle({ stadium }: { stadium: Stadium }) {
   // Distance sets the rules here. At z = goalZ - 26 the camera only sees about
   // ±10 units across, so the towers have to sit close to the centre line — and
   // straddle it rather than stand on it, leaving the goal mouth clear.
   const z = PITCH.goalZ - 26
   const towers: { x: number; height: number; radius: number; roof: string }[] = [
-    { x: -9.2, height: 8.5, radius: 1.1, roof: '#a855f7' },
-    { x: -4.6, height: 11.5, radius: 1.25, roof: '#ec4899' },
-    { x: 4.6, height: 11.5, radius: 1.25, roof: '#ec4899' },
-    { x: 9.2, height: 8.5, radius: 1.1, roof: '#a855f7' },
+    { x: -9.2, height: 8.5, radius: 1.1, roof: stadium.castleRoofShort },
+    { x: -4.6, height: 11.5, radius: 1.25, roof: stadium.castleRoofTall },
+    { x: 4.6, height: 11.5, radius: 1.25, roof: stadium.castleRoofTall },
+    { x: 9.2, height: 8.5, radius: 1.1, roof: stadium.castleRoofShort },
   ]
 
   return (
     <group position={[0, 0, z]}>
       <mesh position={[0, 3.5, 0]}>
         <boxGeometry args={[46, 7, 2]} />
-        <meshLambertMaterial color="#cdb0ea" />
+        <meshLambertMaterial color={stadium.castleWall} />
       </mesh>
       {/* Crenellations along the rampart. */}
       {Array.from({ length: 23 }, (_, i) => (
         <mesh key={i} position={[-22 + i * 2, 7.45, 0]}>
           <boxGeometry args={[1, 0.9, 2.1]} />
-          <meshLambertMaterial color="#cdb0ea" />
+          <meshLambertMaterial color={stadium.castleWall} />
         </mesh>
       ))}
 
@@ -95,7 +104,7 @@ function Castle() {
         <group key={t.x} position={[t.x, 0, 0]}>
           <mesh position={[0, t.height / 2, 0]}>
             <cylinderGeometry args={[t.radius, t.radius * 1.08, t.height, 12]} />
-            <meshLambertMaterial color="#e3ccf7" />
+            <meshLambertMaterial color={stadium.castleTower} />
           </mesh>
           <mesh position={[0, t.height + t.radius * 1.1, 0]}>
             <coneGeometry args={[t.radius * 1.35, t.radius * 2.2, 12]} />
@@ -115,7 +124,7 @@ function Castle() {
           {[0.5, 0.75].map((f) => (
             <mesh key={f} position={[0, t.height * f, t.radius * 0.98]}>
               <boxGeometry args={[0.4, 0.66, 0.08]} />
-              <meshBasicMaterial color="#7c3aed" />
+              <meshBasicMaterial color={stadium.castleRoofTall} />
             </mesh>
           ))}
         </group>
@@ -130,12 +139,14 @@ function Goal({
   height,
   postRadius,
   net,
+  netTint,
 }: {
   goalZ: number
   halfWidth: number
   height: number
   postRadius: number
   net: THREE.Texture
+  netTint: string
 }) {
   const post = <cylinderGeometry args={[postRadius, postRadius, height, 10]} />
   return (
@@ -156,12 +167,12 @@ function Goal({
       {/* Back and side netting, angled away from the goal line. */}
       <mesh position={[0, height / 2, -2.2]}>
         <planeGeometry args={[halfWidth * 2, height]} />
-        <meshLambertMaterial map={net} transparent side={THREE.DoubleSide} color="#ffd9f0" />
+        <meshLambertMaterial map={net} transparent side={THREE.DoubleSide} color={netTint} />
       </mesh>
       {[-1, 1].map((side) => (
         <mesh key={side} position={[side * halfWidth, height / 2, -1.1]} rotation={[0, Math.PI / 2, 0]}>
           <planeGeometry args={[2.2, height]} />
-          <meshLambertMaterial map={net} transparent side={THREE.DoubleSide} color="#ffd9f0" />
+          <meshLambertMaterial map={net} transparent side={THREE.DoubleSide} color={netTint} />
         </mesh>
       ))}
     </group>
@@ -190,18 +201,18 @@ function Crown({ x, y, z, radius }: { x: number; y: number; z: number; radius: n
 }
 
 /** Low candy-coloured stands framing the pitch, purely decorative. */
-function Stands() {
+function Stands({ stadium }: { stadium: Stadium }) {
   return (
     <group>
       {[-1, 1].map((side) => (
         <mesh key={side} position={[side * (PITCH.pitchHalfWidth + 1.5), 0.9, -6]}>
           <boxGeometry args={[3, 1.8, 34]} />
-          <meshLambertMaterial color={side < 0 ? '#c58cff' : '#8cd0ff'} />
+          <meshLambertMaterial color={side < 0 ? stadium.standLeft : stadium.standRight} />
         </mesh>
       ))}
       <mesh position={[0, 1.4, PITCH.goalZ - 4.5]}>
         <boxGeometry args={[26, 2.8, 3]} />
-        <meshLambertMaterial color="#ff9ed2" />
+        <meshLambertMaterial color={stadium.standBack} />
       </mesh>
     </group>
   )

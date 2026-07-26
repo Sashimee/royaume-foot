@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { useGame } from '../store/gameStore'
 import { isUnlocked, useSave } from '../store/saveStore'
 import { BALLS, CHARACTERS, characterById } from '../data/roster'
+import { STADIUMS } from '../data/stadiums'
 import { useT } from '../i18n/useLang'
 import { Character } from '../three/Character'
 import { BigButton, IconButton, PickCard } from './ui'
@@ -23,6 +24,8 @@ export function WardrobeScreen() {
   const ballId = useSave((s) => s.ballId)
   const setCharacter = useSave((s) => s.setCharacter)
   const setBall = useSave((s) => s.setBall)
+  const stadiumId = useSave((s) => s.stadiumId)
+  const setStadium = useSave((s) => s.setStadium)
 
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: SKY }}>
@@ -60,7 +63,7 @@ export function WardrobeScreen() {
         </div>
 
         <h2 className="mb-3 text-2xl font-black text-white">⚽ {t('wardrobe.balls')}</h2>
-        <div className="flex flex-wrap gap-3">
+        <div className="mb-6 flex flex-wrap gap-3">
           {BALLS.map((b) => (
             <PickCard
               key={b.id}
@@ -69,6 +72,20 @@ export function WardrobeScreen() {
               locked={!isUnlocked(b.unlockStars, stars)}
               lockedLabel={`⭐${b.unlockStars}`}
               onClick={() => setBall(b.id)}
+            />
+          ))}
+        </div>
+
+        <h2 className="mb-3 text-2xl font-black text-white">🏟️ {t('wardrobe.stadiums')}</h2>
+        <div className="flex flex-wrap gap-3">
+          {STADIUMS.map((st) => (
+            <PickCard
+              key={st.id}
+              badge={st.badge}
+              selected={st.id === stadiumId}
+              locked={!isUnlocked(st.unlockStars, stars)}
+              lockedLabel={`⭐${st.unlockStars}`}
+              onClick={() => setStadium(st.id)}
             />
           ))}
         </div>
