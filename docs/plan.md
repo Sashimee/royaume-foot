@@ -164,13 +164,35 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 > là où l'anneau l'a promis — un télégraphe qui ment est pire que pas de
 > télégraphe.
 
+**Phase 3bis — Personnages & direction artistique — ⬜ à faire**
+
+- ⬜ **Chevaliers jouables.** Ouvrir le roster à un second type de personnage :
+  aujourd'hui `data/roster.ts` ne décrit que des princesses (peau, cheveux,
+  robe, couronne) et `three/Princess.tsx` code cette anatomie en dur. Il faut
+  un champ `kind: 'princess' | 'knight'` et un composant `Knight.tsx` frère,
+  avec ses propres pièces (heaume à plumet, plastron, cape, épée au fourreau,
+  bouclier aux couleurs du royaume). Le reste — vestiaire, déblocages,
+  animations idle / tir / joie, les deux mini-jeux — doit continuer à marcher
+  sans le savoir : c'est le test de la bonne abstraction.
+  *Attention :* la garde-robe et le menu affichent le personnage via
+  `<Princess showcase>` ; ce point d'entrée devient générique.
+
+- ⬜ **Refaire le dragon.** Il est franchement moche : c'est une grosse sphère
+  verte avec des ailes-galets et un museau en cône, sans cou, sans silhouette,
+  et il se lit comme un blob dès qu'il s'éloigne. Il joue pourtant deux rôles
+  visibles (gardien en mode tir, tireur en mode gardienne), donc il mérite un
+  vrai passage : silhouette lisible de loin, cou et tête distincts, ailes
+  membranées plutôt que des sphères aplaties, pattes visibles, queue segmentée,
+  expression amicale (il doit rester le gentil du jeu). Contrainte inchangée :
+  **primitives uniquement, aucun fichier .glb**.
+
 **Phase 4 — Fête finale (2 j)**
-Casse-tour, Coupe du Royaume + trophée, PWA (manifest + SW à scope
-`/Pic-collage/game/`, installable), icônes, écran de fin.
+Casse-tour, Coupe du Royaume + trophée, PWA (manifest + service worker,
+installable), icônes, écran de fin.
 
 **Phase 5 — Qualité (1 j)**
-Tests unitaires physique/visée/score, smoke Playwright, passe perf sur mobile,
-accessibilité (contrastes, `prefers-reduced-motion`, pas de flash rapide).
+Passe perf sur mobile réel, accessibilité (contrastes, `prefers-reduced-motion`,
+pas de flash rapide), test avec un enfant de l'âge cible.
 
 ---
 
