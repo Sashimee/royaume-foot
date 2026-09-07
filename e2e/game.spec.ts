@@ -298,3 +298,74 @@ test.describe('Coupe du Royaume', () => {
     await expect(page.getByText(/1\/4/)).toBeVisible()
   })
 })
+
+test.describe('reduced motion', () => {
+  /** Share of pixels that change between two frames a second apart. */
+  async function movement(page: Page): Promise<number> {
+    const a = 'data:image/png;base64,' + (await page.screenshot()).toString('base64')
+    await page.waitForTimeout(900)
+    const b = 'data:image/png;base64,' + (await page.screenshot()).toString('base64')
+    return page.evaluate(
+      ([one, two]) =>
+        new Promise<number>((done) => {
+          const images = [new Image(), new Image()]
+          let loaded = 0
+          const compare = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = images[0].width
+            canvas.height = images[0].height
+            const ctx = canvas.getContext('2d')!
+            ctx.drawImage(images[0], 0, 0)
+            const first = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            ctx.drawImage(images[1], 0, 0)
+            const second = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+            let changed = 0
+            for (let i = 0; i < first.length; i += 4) {
+              const d =
+                Math.abs(first[i] - second[i]) +
+                Math.abs(first[i + 1] - second[i + 1]) +
+                Math.abs(first[i + 2] - second[i + 2])
+              if (d > 24) changed++
+            }
+            done((changed / (first.length / 4)) * 100)
+          }
+          images.forEach((img, i) => {
+            img.onload = () => ++loaded === 2 && compare()
+            img.src = i === 0 ? one : two
+          })
+        }),
+      [a, b],
+    )
+  }
+
+  test('stills the decorative motion, and only the decorative motion', async ({ page }) => {
+    test.setTimeout(120_000)
+
+    // src/index.css already honoured this for the DOM animations; the whole 3D
+    // half of the game ignored it until Phase 5.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('./')
+    await page.waitForTimeout(2500)
+
+    // The menu is pure decoration — a character turning slowly on the spot.
+    // Nothing on it should move at all.
+    expect(await movement(page)).toBeLessThan(0.1)
+
+    // The pitch keeps the keeper's patrol, because that is the thing the child
+    // is timing their shot against. Stilling it would not be a gentler game,
+    // it would be a different one.
+    await page.getByRole('button', { name: /tirer|shoot/i }).first().click()
+    await page.waitForTimeout(2500)
+    expect(await movement(page)).toBeGreaterThan(0)
+  })
+
+  test('moves by default', async ({ page }) => {
+    // The guard on the test above: if the diff always read zero it would pass
+    // for the wrong reason.
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('./')
+    await page.waitForTimeout(2500)
+    expect(await movement(page)).toBeGreaterThan(0.3)
+  })
+})

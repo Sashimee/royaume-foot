@@ -14,6 +14,7 @@ npm run lint       # tsc -b --noEmit
 npm test           # vitest, unit only
 npm run test:e2e   # playwright, plays a real round
 node scripts/generate-icons.mjs   # redraw the PWA icons; output is committed
+node scripts/quality-bench.mjs    # contrast, tap targets, draw calls (needs a dev server)
 ```
 
 ## The audience is the architecture
@@ -180,7 +181,15 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
   large `dt` is still accurate.
 - **Perf budget:** no shadow maps (blob shadows instead), `dpr` capped at 2,
   crowd in one `InstancedMesh`, toon/lambert materials only. Target is a school
-  Chromebook at 60 fps.
+  Chromebook at 60 fps. The plan's number is **under 40 draw calls** and the
+  game is **over it** — 140 in `shoot` after instancing the castle's repeated
+  decor, down from 157. The characters and keepers are the cost: dozens of
+  primitives each, inside groups that animate, so they cannot be merged without
+  redoing the rigs. Measure with `scripts/quality-bench.mjs` before touching it,
+  and do not "optimise" this on a machine with no GPU — the benefit is
+  unmeasurable there and the risk is a visible regression.
+- **Repeated identical decor gets instanced**, not mapped into N meshes. The
+  `Repeated` helper in `Pitch.tsx` is there for it.
 - **Check what is actually on screen before placing anything.** The camera
   frustum is fitted to the goal *at the goal line*, so an object nearer the
   camera has proportionally less room: `visibleHalfWidthAt(z)` in
@@ -204,6 +213,18 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
 - Hooks must stay **above any early return** in components that read async data
   (the `useImage`-style trap): a hook after `if (!x) return null` changes the
   hook count when the data resolves and crashes the whole stage.
+- **`prefers-reduced-motion` reaches the 3D scene too**, through
+  `three/reducedMotion.ts`. `src/index.css` covers the DOM; anything new that
+  loops forever in `useFrame` has to check the hook as well. **Gameplay motion
+  stays** — a ball that does not fly is not a gentler game, it is a broken one.
+  What stops is what is there for charm: idle breathing, wing beats, the
+  mascot's hop, the crowd, the wardrobe turntable.
+- **Contrast is measured off rendered pixels, never calculated from CSS.** This
+  UI is gradients, translucent plates and a 3D scene showing through the HUD, so
+  a colour-pair calculation is fiction. A label whose plate is translucent has a
+  different contrast at the top of a screen than at the bottom — that is exactly
+  how the locked-item price ended up at 1.05:1. **Labels that must be readable
+  get an opaque plate.**
 
 ## Deployment
 

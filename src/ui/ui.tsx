@@ -32,8 +32,8 @@ export function BigButton({
 }) {
   const palette =
     tone === 'primary'
-      ? 'bg-gradient-to-b from-pink-400 to-fuchsia-600 border-pink-200'
-      : 'bg-gradient-to-b from-violet-400/90 to-violet-700/90 border-violet-200'
+      ? 'bg-gradient-to-b from-pink-500 to-fuchsia-700 border-pink-200'
+      : 'bg-gradient-to-b from-violet-500/95 to-violet-800/95 border-violet-200'
 
   return (
     <button
@@ -43,7 +43,7 @@ export function BigButton({
         sfx.tap()
         onClick()
       }}
-      className={`${palette} ${compact ? 'px-3 py-2 text-lg leading-tight' : 'px-5 py-3 text-2xl'}
+      className={`${palette} ${compact ? 'px-3 py-2 text-xl leading-tight' : 'px-5 py-3 text-2xl'}
         min-h-16 text-balance rounded-3xl border-4 font-bold text-white
         shadow-[0_8px_0_rgba(0,0,0,0.22)] transition active:translate-y-1
         active:shadow-[0_3px_0_rgba(0,0,0,0.22)]`}
@@ -125,14 +125,23 @@ export function PickCard({
       }}
       className={`relative flex h-24 w-24 flex-col items-center justify-center rounded-3xl border-4
         transition active:scale-95
-        ${selected ? 'border-yellow-300 bg-white/25' : 'border-white/25 bg-white/10'}
-        ${locked ? 'opacity-60' : ''}`}
+        ${selected ? 'border-yellow-300 bg-white/25' : 'border-white/25 bg-white/10'}`}
     >
-      <span className="text-4xl">{locked ? '🔒' : badge}</span>
-      {locked ? (
-        <span className="mt-1 text-xs font-bold text-yellow-200">{lockedLabel}</span>
-      ) : (
-        name && <span className="mt-1 text-xs font-semibold text-white/90">{name}</span>
+      {/* Only the emblem dims when locked. Fading the whole card took the price
+          with it, and an unreadable price is the same as no price. */}
+      <span className={`text-4xl ${locked ? 'opacity-55' : ''}`}>{locked ? '🔒' : badge}</span>
+      {/* An OPAQUE plate, not a translucent one. The wardrobe's backdrop runs
+          from deep violet at the top to pale pink at the bottom, so a
+          `bg-black/55` chip that read at 7:1 next to the princesses fell to
+          1.05:1 by the time it reached the last knight. A label's legibility
+          must not depend on how far down the page it happens to sit. */}
+      {(locked || name) && (
+        <span
+          className={`mt-1 rounded-full bg-[#241539] px-2 py-0.5 text-sm font-black leading-none
+            ${locked ? 'text-yellow-200' : 'text-white'}`}
+        >
+          {locked ? lockedLabel : name}
+        </span>
       )}
     </button>
   )

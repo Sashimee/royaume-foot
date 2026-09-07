@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { PITCH } from '../game/constants'
 import { TARGETS } from '../game/scoring'
@@ -92,13 +92,14 @@ function Castle({ stadium }: { stadium: Stadium }) {
         <boxGeometry args={[46, 7, 2]} />
         <meshLambertMaterial color={stadium.castleWall} />
       </mesh>
-      {/* Crenellations along the rampart. */}
-      {Array.from({ length: 23 }, (_, i) => (
-        <mesh key={i} position={[-22 + i * 2, 7.45, 0]}>
-          <boxGeometry args={[1, 0.9, 2.1]} />
-          <meshLambertMaterial color={stadium.castleWall} />
-        </mesh>
-      ))}
+      {/* Crenellations along the rampart — 23 identical blocks, so one
+          instanced mesh rather than 23 draw calls. Same trick as the crowd. */}
+      <Repeated
+        count={23}
+        at={(i) => [-22 + i * 2, 7.45, 0]}
+        geometry={<boxGeometry args={[1, 0.9, 2.1]} />}
+        material={<meshLambertMaterial color={stadium.castleWall} />}
+      />
 
       {towers.map((t) => (
         <group key={t.x} position={[t.x, 0, 0]}>
@@ -120,16 +121,63 @@ function Castle({ stadium }: { stadium: Stadium }) {
             <boxGeometry args={[t.radius * 1.1, 0.45, 0.06]} />
             <meshBasicMaterial color="#ffd84d" />
           </mesh>
-          {/* Windows, so the towers do not read as blank cylinders. */}
-          {[0.5, 0.75].map((f) => (
-            <mesh key={f} position={[0, t.height * f, t.radius * 0.98]}>
-              <boxGeometry args={[0.4, 0.66, 0.08]} />
-              <meshBasicMaterial color={stadium.castleRoofTall} />
-            </mesh>
-          ))}
         </group>
       ))}
+
+      {/* Windows, so the towers do not read as blank cylinders. Two per tower,
+          all the same box, so they are instanced across every tower at once —
+          which is why they live out here rather than inside the tower group. */}
+      <Repeated
+        count={towers.length * 2}
+        at={(i) => {
+          const t = towers[Math.floor(i / 2)]
+          return [t.x, t.height * (i % 2 === 0 ? 0.5 : 0.75), t.radius * 0.98]
+        }}
+        geometry={<boxGeometry args={[0.4, 0.66, 0.08]} />}
+        material={<meshBasicMaterial color={stadium.castleRoofTall} />}
+      />
     </group>
+  )
+}
+
+/**
+ * N copies of one mesh in one draw call.
+ *
+ * The performance budget in the plan is under 40 draw calls, on the assumption
+ * that repeated decor would be merged or instanced. It never was: the castle
+ * alone was spending 31 calls on blocks that are all the same box in the same
+ * colour.
+ */
+function Repeated({
+  count,
+  at,
+  geometry,
+  material,
+}: {
+  count: number
+  at: (i: number) => [number, number, number]
+  geometry: React.ReactNode
+  material: React.ReactNode
+}) {
+  const ref = useRef<THREE.InstancedMesh>(null)
+
+  useLayoutEffect(() => {
+    const mesh = ref.current
+    if (!mesh) return
+    const dummy = new THREE.Object3D()
+    for (let i = 0; i < count; i += 1) {
+      dummy.position.set(...at(i))
+      dummy.updateMatrix()
+      mesh.setMatrixAt(i, dummy.matrix)
+    }
+    mesh.instanceMatrix.needsUpdate = true
+  }, [count, at])
+
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, count]} frustumCulled={false}>
+      {geometry}
+      {material}
+    </instancedMesh>
   )
 }
 

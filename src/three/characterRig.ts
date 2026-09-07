@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useReducedMotion } from './reducedMotion'
 
 export type CharacterMode = 'idle' | 'kick' | 'celebrate'
 
@@ -38,6 +39,7 @@ export interface RigOptions {
  */
 export function useCharacterRig(rig: Rig, options: RigOptions) {
   const clock = useRef(0)
+  const reduced = useReducedMotion()
   const { mode, showcase, position, facing, spinToCelebrate } = options
 
   // Restart the animation whenever the mode changes, so a second goal in a row
@@ -53,6 +55,15 @@ export function useCharacterRig(rig: Rig, options: RigOptions) {
     if (!g) return
 
     if (showcase) {
+      // Facing the camera, standing still. The slow turntable is the single
+      // longest-running animation in the game — it never ends.
+      if (reduced) {
+        g.rotation.y = Math.PI
+        g.position.y = position[1]
+        swing(rig.armL, 0)
+        swing(rig.armR, 0)
+        return
+      }
       g.rotation.y = Math.PI + Math.sin(t * 0.5) * 0.45
       g.position.y = position[1] + Math.sin(t * 1.6) * 0.04
       swing(rig.armL, Math.sin(t * 1.6) * 0.12)
@@ -61,12 +72,14 @@ export function useCharacterRig(rig: Rig, options: RigOptions) {
     }
 
     if (mode === 'celebrate') {
-      // Turn to face the camera, jump, arms in the air.
+      // Turn to face the camera, jump, arms in the air. Reduced, they hold the
+      // pose instead of bouncing: the celebration still reads, it just stays put.
       g.rotation.y = damp(g.rotation.y, spinToCelebrate ? facing + Math.PI : facing, 6, dt)
-      g.position.y = position[1] + Math.abs(Math.sin(t * 6)) * 0.28
+      g.position.y = position[1] + (reduced ? 0 : Math.abs(Math.sin(t * 6)) * 0.28)
       const raise = Math.min(1, t * 4)
-      swing(rig.armL, -2.4 * raise + Math.sin(t * 9) * 0.2)
-      swing(rig.armR, -2.4 * raise - Math.sin(t * 9) * 0.2)
+      const cheer = reduced ? 0 : Math.sin(t * 9) * 0.2
+      swing(rig.armL, -2.4 * raise + cheer)
+      swing(rig.armR, -2.4 * raise - cheer)
       swing(rig.legL, 0)
       swing(rig.legR, 0)
       return
@@ -87,6 +100,15 @@ export function useCharacterRig(rig: Rig, options: RigOptions) {
     }
 
     // Idle: a small breath, and a bit of a sway.
+    if (reduced) {
+      g.position.y = position[1]
+      g.rotation.z = 0
+      swing(rig.armL, 0)
+      swing(rig.armR, 0)
+      swing(rig.legL, 0)
+      swing(rig.legR, 0)
+      return
+    }
     g.position.y = position[1] + Math.sin(t * 2) * 0.03
     g.rotation.z = Math.sin(t * 1.3) * 0.02
     swing(rig.armL, Math.sin(t * 2) * 0.1)

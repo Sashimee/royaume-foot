@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Mascot as MascotData } from '../data/mascots'
 import { visibleHalfWidthAt } from '../game/constants'
+import { useReducedMotion } from './reducedMotion'
 
 /**
  * The player's companion.
@@ -26,6 +27,7 @@ export function Mascot({
 }) {
   const root = useRef<THREE.Group>(null)
   const body = useRef<THREE.Group>(null)
+  const reduced = useReducedMotion()
 
   useFrame((state, dt) => {
     const g = root.current
@@ -43,11 +45,13 @@ export function Mascot({
     g.position.x = THREE.MathUtils.lerp(g.position.x, targetX, k)
     g.position.z = THREE.MathUtils.lerp(g.position.z, targetZ, k)
 
-    // A little hop, faster the further it is from where it wants to be.
+    // A little hop, faster the further it is from where it wants to be. It
+    // still trots after the player when motion is reduced — it just stops
+    // bouncing on the spot while it waits.
     const chasing = Math.min(1, Math.abs(targetX - g.position.x) * 2)
     if (body.current) {
-      body.current.position.y = Math.abs(Math.sin(t * (5 + chasing * 6))) * (0.06 + chasing * 0.12)
-      body.current.rotation.z = Math.sin(t * 4) * 0.06
+      body.current.position.y = reduced ? 0 : Math.abs(Math.sin(t * (5 + chasing * 6))) * (0.06 + chasing * 0.12)
+      body.current.rotation.z = reduced ? 0 : Math.sin(t * 4) * 0.06
     }
   })
 

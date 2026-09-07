@@ -112,7 +112,7 @@ function LangRow() {
           aria-label={l.label}
           aria-pressed={l.code === lang}
           onClick={() => setLang(l.code)}
-          className={`h-14 w-14 rounded-xl text-2xl transition ${
+          className={`h-16 w-16 rounded-xl text-2xl transition ${
             l.code === lang ? "scale-110 bg-white/25" : "opacity-60"
           }`}
         >

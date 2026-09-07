@@ -289,16 +289,81 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   `sw.js` est explicitement non-caché par nginx — un service worker gardé fige un
   enfant sur la version qu'il a installée et plus aucun déploiement ne l'atteint.
 
-**Phase 5 — Qualité (1 j) — ⬜ à faire**
-Passe perf sur mobile réel, accessibilité (contrastes, `prefers-reduced-motion`,
-pas de flash rapide), test avec un enfant de l'âge cible.
+**Phase 5 — Qualité — 🟡 l'accessibilité est faite, le reste attend un enfant**
 
-> **C'est maintenant la chose qui manque le plus.** Les phases 3ter et 4 ont
-> ajouté quatre gardiens, un mini-jeu et une coupe sur un équilibrage validé par
-> **une seule** session avec un enfant. La question que le plan se posait déjà —
-> « qu'est-ce qui a été difficile ou pas compris ? » — vaut plus que n'importe
-> quelle fonctionnalité restante, et elle vaut maintenant pour cinq façons de
-> jouer au lieu de trois.
+- ✅ **Contrastes, mesurés et non calculés.** `scripts/quality-bench.mjs` relit
+  les **pixels rendus** (la capture est redessinée dans un canvas de la page),
+  parce que cette interface est faite de dégradés, de plaques translucides et
+  d'une scène 3D qui transparaît sous le HUD — un calcul sur les couleurs CSS
+  ne voit rien de tout cela.
+
+  Il a trouvé ce qu'un calcul aurait manqué : **le prix d'un objet verrouillé
+  était illisible**. La carte entière était atténuée (`opacity-60`), prix
+  compris, et la pastille translucide dépendait du fond — 7:1 à hauteur des
+  princesses, **1,05:1** arrivé au dernier chevalier, plus bas sur le même
+  dégradé. Or ce prix est exactement ce qu'un enfant doit pouvoir lire : c'est
+  ce pour quoi il joue. Désormais seul l'emblème s'atténue, et la pastille est
+  **opaque**. Les six écrans passent AA.
+
+- ✅ **Cibles tactiles.** La rangée des langues était à 56 px, sous la règle 4
+  du projet (64 px), depuis toujours. Corrigée. Le banc la vérifie.
+
+- ✅ **`prefers-reduced-motion` atteint enfin la 3D.** `src/index.css` le
+  respectait pour le DOM ; toute la moitié 3D l'ignorait — respiration au repos,
+  battements d'ailes, saut de la mascotte, foule de 132 spectateurs, et le
+  tourne-disque du vestiaire qui ne s'arrête jamais. `three/reducedMotion.ts`,
+  branché dans les deux rigs, la mascotte et la foule.
+
+  **Le mouvement de jeu n'est PAS réduit** : un ballon qui ne vole pas n'est pas
+  un jeu de foot plus doux, c'est un jeu cassé. Ce qui s'arrête est ce qui est là
+  pour le charme. Mesuré : le menu passe de 2,35 % à **0 %** de pixels qui
+  bougent par seconde ; sur le terrain il reste 2 %, et c'est la patrouille du
+  gardien — celle que l'enfant chronomètre. Deux tests e2e le tiennent, dont un
+  garde-fou qui échoue si la mesure renvoyait zéro pour de mauvaises raisons.
+
+- ✅ **Pas de flash rapide.** Mesuré pendant une célébration (confettis, cri,
+  foule) : la luminance moyenne reste entre 0,567 et 0,575, **zéro** variation
+  au-delà de 10 %. La limite WCAG est de trois par seconde.
+
+- 🟡 **Les draw calls sont hors budget.** Le budget de la phase 1 dit **moins de
+  40** ; la réalité mesurée était de **157** en mode tir. La ligne du budget
+  supposait « décor = géométries fusionnées » — ce qui n'a jamais été fait.
+
+  Deux instanciations sûres (23 créneaux du rempart identiques, 8 fenêtres de
+  tour identiques) ramènent à **140 / 124 / 84 / 72** selon le mode. C'est
+  −17 partout, et rien n'a changé à l'écran — vérifié sur les quatre stades.
+
+  **Le reste n'a pas été fait, et volontairement.** Le gros du compte, ce sont
+  les personnages et les gardiens : des dizaines de primitives par corps, dans
+  des groupes qui s'animent, donc pas fusionnables sans refondre les rigs. Sur
+  du vrai matériel 140 draw calls ne se voient pas ; sur cette machine il n'y a
+  **pas de GPU** (rastérisation logicielle), donc le gain serait invérifiable.
+  Optimiser à l'aveugle un chiffre qu'on ne peut pas mesurer, en touchant ce qui
+  casse le plus visiblement, est le meilleur moyen d'introduire une régression
+  pour rien. **À reprendre le jour où le jeu tourne sur un vrai appareil.**
+
+- ⬜ **Passe perf sur mobile réel.** Impossible ici, pour la raison ci-dessus.
+
+- ⬜ **Test avec un enfant de l'âge cible.** *Personne d'autre ne peut le faire.*
+
+> **C'est ce qui manque le plus.** Les phases 3ter et 4 ont ajouté quatre
+> gardiens, un mini-jeu et une coupe sur un équilibrage validé par **une seule**
+> session. La question que le plan se posait déjà — « qu'est-ce qui a été
+> difficile ou pas compris ? » — vaut plus que n'importe quelle fonctionnalité
+> restante, et elle vaut maintenant pour cinq façons de jouer au lieu de trois.
+>
+> **Ce qu'il faut regarder, dans l'ordre :**
+> 1. **Casse-tours** est le seul mini-jeu que personne n'a jamais essayé. Le
+>    geste est celui du tir, donc il ne devrait rien y avoir à expliquer — c'est
+>    précisément l'hypothèse à vérifier.
+> 2. **La coupe va-t-elle au bout ?** Quatre épreuves d'affilée, c'est long à
+>    6 ans. Si elle décroche, à quelle épreuve ?
+> 3. **Les gardiens se distinguent-ils ?** Ils sont à vingt-cinq unités. Le
+>    pari est que la silhouette suffit. Demander « c'est qui, dans les buts ? »
+>    sans montrer le vestiaire.
+> 4. **L'onglet 🧤 se trouve-t-il tout seul ?** Il y a cinq onglets maintenant.
+> 5. Et toujours : **où est-ce qu'elle a bloqué ?** « Ça marche » est un bon
+>    signal, « voilà où elle a bloqué » en est un meilleur.
 
 ---
 

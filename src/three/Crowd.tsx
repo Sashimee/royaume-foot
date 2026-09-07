@@ -1,7 +1,8 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { PITCH } from '../game/constants'
+import { useReducedMotion } from './reducedMotion'
 
 const COUNT = 132
 const COLORS = ['#ff8ec7', '#ffd84d', '#8be0d0', '#c58cff', '#ffb35c', '#9ec9ff', '#ff6b8b']
@@ -55,23 +56,33 @@ export function Crowd({ cheerUntil }: { cheerUntil: React.RefObject<number> }) {
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
   }, [people])
 
+  const reduced = useReducedMotion()
+  // Redrawn once when the setting changes, then left alone: a still crowd has
+  // no reason to rewrite 132 matrices every frame.
+  const settled = useRef(false)
+  useEffect(() => {
+    settled.current = false
+  }, [reduced])
+
   useFrame((state) => {
     const mesh = ref.current
     if (!mesh) return
+    if (reduced && settled.current) return
     const t = state.clock.elapsedTime
     const cheering = t < cheerUntil.current
 
     for (let i = 0; i < people.length; i++) {
       const p = people[i]
       const wave = Math.sin(t * (cheering ? 9 : 2.2) + p.phase)
-      const hop = cheering ? Math.abs(wave) * 0.5 : wave * 0.06
+      const hop = reduced ? 0 : cheering ? Math.abs(wave) * 0.5 : wave * 0.06
       dummy.position.set(p.x, p.y + hop, p.z)
       dummy.scale.setScalar(p.height)
-      dummy.rotation.z = cheering ? wave * 0.25 : 0
+      dummy.rotation.z = !reduced && cheering ? wave * 0.25 : 0
       dummy.updateMatrix()
       mesh.setMatrixAt(i, dummy.matrix)
     }
     mesh.instanceMatrix.needsUpdate = true
+    settled.current = true
   })
 
   return (

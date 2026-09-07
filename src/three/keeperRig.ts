@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useReducedMotion } from './reducedMotion'
 
 export interface KeeperRigRefs {
   body: RefObject<THREE.Group | null>
@@ -31,7 +32,16 @@ export interface KeeperRigOptions {
  * hook never touches either.
  */
 export function useKeeperRig(rig: KeeperRigRefs, { limbSwing, limbSpeed = 4 }: KeeperRigOptions) {
+  const reduced = useReducedMotion()
+
   useFrame((state) => {
+    // Every line below is idle charm, so all of it goes. The keeper still moves
+    // where the match loop puts them, and still dives.
+    if (reduced) {
+      if (rig.limbL.current) rig.limbL.current.rotation.z = 0.35
+      if (rig.limbR.current) rig.limbR.current.rotation.z = -0.35
+      return
+    }
     const t = state.clock.elapsedTime
     const beat = Math.sin(t * limbSpeed) * limbSwing
 
