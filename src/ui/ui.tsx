@@ -15,12 +15,20 @@ export function BigButton({
   onClick,
   tone = 'primary',
   label,
+  compact = false,
 }: {
   children: ReactNode
   onClick: () => void
   tone?: 'primary' | 'secondary'
   /** Screen-reader label, when the visible content is mostly emoji. */
   label?: string
+  /**
+   * Smaller type and tighter padding, for buttons sharing a row. Still 64px
+   * tall — the tap target does not shrink, only the text inside it. Six
+   * languages means some labels are three words long, and at full size they
+   * wrapped to three lines and pushed the rest of the menu off the screen.
+   */
+  compact?: boolean
 }) {
   const palette =
     tone === 'primary'
@@ -35,7 +43,8 @@ export function BigButton({
         sfx.tap()
         onClick()
       }}
-      className={`${palette} min-h-16 rounded-3xl border-4 px-7 py-4 text-2xl font-bold text-white
+      className={`${palette} ${compact ? 'px-3 py-2 text-lg leading-tight' : 'px-5 py-3 text-2xl'}
+        min-h-16 text-balance rounded-3xl border-4 font-bold text-white
         shadow-[0_8px_0_rgba(0,0,0,0.22)] transition active:translate-y-1
         active:shadow-[0_3px_0_rgba(0,0,0,0.22)]`}
     >
