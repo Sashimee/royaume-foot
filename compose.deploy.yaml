@@ -1,0 +1,41 @@
+# The Dokploy stack for https://foot.bas.lu.
+#
+# Dokploy clones this repository on the VPS and builds the image from it; there
+# is no registry in the path. The build runs the typecheck and the unit tests
+# (see Dockerfile), so a broken rule set cannot become a running container.
+#
+# The game is entirely client-side: no database, no API, no secrets. It
+# therefore joins only `dokploy-network`, the shared overlay Traefik lives on,
+# and has no private network of its own — there is nothing to keep private.
+#
+# Every router, service and container name is prefixed `foot-`: router names are
+# global to this Traefik instance, and a collision makes the second stack
+# silently disappear.
+
+name: royaume-foot
+
+services:
+  foot-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks: [dokploy-network]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # Plain http has to answer as well, or a link typed without a scheme 404s.
+      # The middleware is Dokploy's own, from traefik/dynamic/middlewares.yml.
+      - traefik.http.routers.foot-web-http.rule=Host(`foot.bas.lu`)
+      - traefik.http.routers.foot-web-http.entrypoints=web
+      - traefik.http.routers.foot-web-http.middlewares=redirect-to-https@file
+      - traefik.http.routers.foot-web-http.service=foot-web
+      - traefik.http.routers.foot-web.rule=Host(`foot.bas.lu`)
+      - traefik.http.routers.foot-web.entrypoints=websecure
+      - traefik.http.routers.foot-web.tls.certresolver=letsencrypt
+      - traefik.http.services.foot-web.loadbalancer.server.port=80
+
+networks:
+  # Provided by Dokploy; this is where Traefik looks for routers.
+  dokploy-network:
+    external: true

@@ -1,18 +1,19 @@
 # Royaume Foot — project guide
 
-A 3D princess football game for **6–7 year olds**, 100 % client-side, deployed to
-GitHub Pages at `https://sashimee.github.io/royaume-foot/`.
+A 3D princess football game for **6–7 year olds**, 100 % client-side, installable,
+and served from `https://foot.bas.lu` (Dokploy + Traefik on the OVH VPS).
 
 Design rationale and phase plan: [`docs/plan.md`](docs/plan.md).
 
 ## Commands
 
 ```bash
-npm run dev        # http://localhost:5173/royaume-foot/
+npm run dev        # http://localhost:5173/
 npm run build      # tsc -b && vite build → dist/
 npm run lint       # tsc -b --noEmit
 npm test           # vitest, unit only
 npm run test:e2e   # playwright, plays a real round
+node scripts/generate-icons.mjs   # redraw the PWA icons; output is committed
 ```
 
 ## The audience is the architecture
@@ -51,9 +52,15 @@ result screen.
 
 | Mode | Verb | Control | Logic |
 | --- | --- | --- | --- |
-| `shoot` | score past the dragon | flick towards the goal | `game/aim.ts`, `game/scoring.ts` |
-| `keep` | save the dragon's shots | drag her along the goal line | `game/keeperGame.ts` |
+| `shoot` | score past the keeper | flick towards the goal | `game/aim.ts`, `game/scoring.ts` |
+| `keep` | save the keeper's shots | drag her along the goal line | `game/keeperGame.ts` |
 | `run` | sweep up stars | drag her across the lane | `game/runGame.ts` |
+| `tower` | knock the towers down | flick towards the towers | `game/towerGame.ts` |
+
+**Coupe du Royaume** is not a fifth mode: it is a frame around the four, in
+`game/cup.ts` and `gameStore.cupLeg`. Each leg is an ordinary round; the cup only
+decides what happens when one ends, and pays a bonus for finishing. `goHome()`
+abandons it, which costs the bonus and keeps the stars the legs already banked.
 
 The runner ends on a **clock**, not on a count of attempts, which is why
 `gameStore.roundOver` is an explicit flag rather than `shotsTaken >= 5`. Its
@@ -109,6 +116,26 @@ pet welded to the character reads as a prop, one that catches up reads as alive.
 It clamps itself to `visibleHalfWidthAt(z)`, because following a player who is
 themselves near the edge of frame walks the pet straight out of shot.
 
+## Keepers
+
+`data/keepers.ts` plus one component per species, dispatched by
+`three/Keeper.tsx` — the same shape as the playable roster, and for the same
+reason. The keeper used to be one hard-coded dragon, which made him the only
+face in goal in `shoot` and the only striker in `keep`.
+
+- Draw one with `<Keeper>`, never `<Dragon>`/`<Unicorn>`/`<Griffin>`/`<Yeti>`.
+  Neither mini-game knows which species it got.
+- Shared idle motion lives in `three/keeperRig.ts`, shared face parts in
+  `three/KeeperParts.tsx`. The face is shared on purpose: those eyes are what
+  make the keeper read as a friend rather than an obstacle, and rule 3 leans on
+  them. A species drawing its own would eventually draw a meaner one.
+- **Silhouettes must differ**, not just palettes: the dragon is a vertical lump
+  with wings, the unicorn a horizontal barrel with a tall neck, the griffin has
+  the one hard angular shape on the pitch (the beak), the yeti has arms held
+  wide. At twenty-five units away that is all a child can actually tell apart.
+- Every species is modelled facing **+z**, towards the camera. Keeping mode
+  turns the whole group round rather than each species knowing which way it plays.
+
 ## What a playtest changed
 
 A child has played this and loves it — the tuning holds. What it exposed was
@@ -119,7 +146,11 @@ the *wardrobe*, not the game:
   `ScrollArea`, which fades its bottom edge and floats a nudge arrow while
   there is more to see.
 - princesses and knights in one grid read as one undifferentiated pile; they
-  are separate sections now, behind tabs with the balls, pitches and mascots.
+  are separate sections now, behind tabs with the balls, pitches, mascots and
+  keepers.
+
+Starting over sits at the foot of the **last** tab, deliberately away from a
+child's casual path through the wardrobe. Moving the last tab moves it.
 
 Ball textures are drawn at 512, not 256 — the ball fills a good part of a phone
 screen at the penalty spot — and motifs stay in the middle band of the image,
@@ -162,15 +193,32 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
   one on a phone. `Scene.tsx` derives fov from the horizontal angle the goal
   needs; the castle exists to fill the band above the goal with something other
   than empty sky. Widening the side margin buys a lot of empty sky — be careful.
-- **`base` in `vite.config.ts` must equal the repo name.** It feeds every asset
-  URL on Pages.
+- **`base` in `vite.config.ts` is `/`**, and the PWA manifest's `start_url` and
+  `scope` read it. The game has a domain to itself now; it was `/royaume-foot/`
+  while GitHub Pages served it from a path named after the repository. If it ever
+  moves back under a path, all three move together or the installed app scopes
+  itself to the wrong place.
+- **`sw.js` must never be cached.** `nginx.conf` says so explicitly. A held
+  service worker pins a child on the version they first installed and no amount
+  of redeploying reaches them.
 - Hooks must stay **above any early return** in components that read async data
   (the `useImage`-style trap): a hook after `if (!x) return null` changes the
   hook count when the data resolves and crashes the whole stage.
 
+## Deployment
+
+Dokploy on `dok.seil.pro` builds the image from this repository and Traefik
+routes `foot.bas.lu` to it. `compose.deploy.yaml` is the stack; the Dockerfile
+runs the typecheck and the unit tests, so a red rule set cannot become a running
+container. The e2e suite runs in CI instead, because it needs a browser the
+production image deliberately does not carry.
+
+**A push does not deploy.** Dokploy rebuilds when its Deploy button is pressed
+or its webhook fires — merging to `main` on its own changes nothing on the VPS.
+
 ## Git workflow
 
-- **`main` = production.** Every push deploys, so `main` stays green.
+- **`main` = production**, and stays green.
 - Feature branches off `main`, Conventional Commits (`feat:`, `fix:`, `chore:`…).
 - **Never push or merge without the user's explicit go-ahead**, unless they have
   clearly granted autonomy for that piece of work.

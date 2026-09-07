@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 5173
-const BASE = `http://localhost:${PORT}/royaume-foot/`
+const BASE = `http://localhost:${PORT}/`
 
 export default defineConfig({
   testDir: '.',

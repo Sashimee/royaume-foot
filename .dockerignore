@@ -1,0 +1,15 @@
+# Never copy a host-built node_modules into the image: npm ci installs its own,
+# and the binaries in here were compiled for a different machine.
+node_modules
+dist
+dist-ssr
+
+.git
+.github
+test-results
+playwright-report
+
+*.log
+.DS_Store
+.vscode
+.idea

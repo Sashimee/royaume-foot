@@ -1,4 +1,12 @@
-name: Deploy to GitHub Pages
+# Checks only.
+#
+# This workflow used to build the game and publish it to GitHub Pages. It is now
+# served from https://foot.bas.lu by Dokploy, which builds the image itself from
+# this repository — so what is left here is the gate, not the delivery.
+#
+# The e2e run lives here and nowhere else: it needs a browser, which the
+# production image deliberately does not carry.
+name: Checks
 
 on:
   push:
@@ -9,12 +17,10 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -31,24 +37,3 @@ jobs:
       - run: npx playwright install chromium --with-deps
       - run: npm run test:e2e
       - run: npm run build
-
-  deploy:
-    needs: check
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm install --no-audit --no-fund
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-      - id: deployment
-        uses: actions/deploy-pages@v4
