@@ -200,7 +200,7 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   *Pour mémoire, l'état d'avant :* une grosse sphère verte, des ailes-galets et
   un museau en cône — sans cou, sans silhouette, illisible dès qu'il s'éloignait.
 
-**Phase 3ter — Retours du terrain — ⬜ à faire**
+**Phase 3ter — Retours du terrain — ✅ fait**
 
 > 🎉 **Un enfant a testé le jeu et l'adore.** C'est la première validation
 > réelle : jusqu'ici tout l'équilibrage reposait sur des harnais qui *simulent*
@@ -209,13 +209,26 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 > « ça marche » est un bon signal, « voilà où elle a bloqué » en est un
 > meilleur.)*
 
-- ⬜ **Le dragon n'est toujours pas bon.** La refonte a apporté une silhouette
-  mais il reste peu convaincant. À reprendre — et surtout, **il ne doit plus
-  être le seul gardien**.
-- ⬜ **Plusieurs gardiens**, dont une **licorne**, débloquables comme le reste.
-  Le gardien devient une entrée de données (`data/keepers.ts`) et un composant
-  par espèce, exactement comme les personnages jouables : le mode tir ne doit
-  pas savoir qui garde la cage.
+- ✅ **Quatre gardiens, dont une licorne.** *(fait)* `data/keepers.ts` +
+  `three/Keeper.tsx` qui aiguille vers un composant par espèce — Braise (dragon,
+  libre), Étoile (licorne, ⭐7), Plume (griffon, ⭐13), Flocon (yéti, ⭐20). Ni le
+  mode tir ni le mode gardienne ne savent quelle espèce ils ont reçue. La
+  mécanique idle partagée est dans `three/keeperRig.ts`, le visage dans
+  `three/KeeperParts.tsx` — partagé exprès : ces yeux-là sont ce qui fait lire le
+  gardien comme un ami plutôt que comme un obstacle, et la règle 3 s'appuie
+  dessus. Onglet 🧤 au vestiaire, avec aperçu 3D du gardien choisi (c'est la
+  seule chose qu'on choisit sans jamais la voir de près : en jeu, elle est au
+  bout du terrain).
+- ✅ **Le dragon refait, une troisième fois.** *(fait)* Le reproche n'était pas
+  la proportion mais la **valeur** : tout son corps était du même vert, donc à
+  vingt-cinq unités il redevenait une tache. Il a maintenant un cou en S qui
+  dégage la tête des épaules, une mâchoire sous le museau, une bande ventrale
+  claire contre un dos plus sombre, et les ailes ouvertes plutôt que pendantes —
+  c'est cette pose-là qui le fait lire comme un **gardien** et non comme un décor
+  planté dans la cage.
+
+  **La vraie correction est ailleurs** : il n'est plus le seul. Une bonne partie
+  de « le dragon n'est pas bon » était « il n'y a que lui ».
 - ✅ **Remise à zéro des étoiles.** *(fait)* Modale de confirmation plein
   écran — l'option sûre est le gros bouton vert, la destructive est discrète.
   Cahier des charges initial :
@@ -238,13 +251,54 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   lieu de 256, motifs cantonnés à la bande centrale (aux pôles la sphère les
   écrase en bouillie).
 
-**Phase 4 — Fête finale (2 j)**
-Casse-tour, Coupe du Royaume + trophée, PWA (manifest + service worker,
-installable), icônes, écran de fin.
+**Phase 4 — Fête finale — ✅ fait**
 
-**Phase 5 — Qualité (1 j)**
+- ✅ **Casse-tours** (`tower`). Trois tours de quatre cubes, le même geste que le
+  tir : rien de nouveau à expliquer. Règles pures dans `game/towerGame.ts`,
+  scène dans `three/TowerMatch.tsx`.
+
+  Deux décisions que les tests ont tranchées, pas le clavier. **La cascade** :
+  toucher le bas d'une tour fait tomber toute la tour, parce que c'est ce que
+  fait toute pile de cubes qu'un enfant a déjà poussée. Et **le bloc touché est
+  celui dont on est à la hauteur**, pas tous ceux qu'on chevauche : le ballon est
+  presque aussi large qu'un cube, donc un test de chevauchement strict attrapait
+  toujours celui du dessous — viser le sommet d'une tour la faisait tomber
+  entière et rendait la visée sans objet. Un test le dit maintenant.
+
+  Un second bug est tombé au même endroit : `justKnocked` survivait à l'appel
+  suivant quand rien n'était touché, ce qui aurait fait rejouer l'effet de chute
+  à chaque image.
+
+- ✅ **Coupe du Royaume** (`game/cup.ts`). Les quatre épreuves à la suite, puis
+  le trophée. **Ce n'est pas un cinquième mini-jeu** : chaque manche est une
+  manche ordinaire, la coupe décide seulement de ce qui arrive quand elle finit.
+  Bandeau de progression en bas (🥅🧤⭐🧱), bonus de 2 étoiles pour finir, 3 de
+  plus pour un sans-faute. Aucune façon d'échouer : une manche ratée rapporte son
+  étoile plancher et avance quand même. Quitter abandonne la coupe, ce qui coûte
+  le bonus et garde les étoiles déjà acquises.
+
+- ✅ **Écran de fin** (`ui/TrophyScreen.tsx`). Une à trois coupes selon les
+  manches, mais **le texte ne varie pas** : arriver au bout est l'exploit, et
+  l'écran le dit quel qu'ait été le score.
+
+- ✅ **PWA installable.** `vite-plugin-pwa`, tout le jeu préchargé (`three` fait
+  725 ko, donc plafond relevé — sans quoi un jeu installé s'ouvre sur un canvas
+  vide dans le bus). Icônes 192/512/maskable/apple-touch engendrées par
+  `scripts/generate-icons.mjs`, **sans aucune dépendance** : un rasteriseur pour
+  cinq formes plates est plus court que l'argument pour ajouter `sharp`. Le
+  `sw.js` est explicitement non-caché par nginx — un service worker gardé fige un
+  enfant sur la version qu'il a installée et plus aucun déploiement ne l'atteint.
+
+**Phase 5 — Qualité (1 j) — ⬜ à faire**
 Passe perf sur mobile réel, accessibilité (contrastes, `prefers-reduced-motion`,
 pas de flash rapide), test avec un enfant de l'âge cible.
+
+> **C'est maintenant la chose qui manque le plus.** Les phases 3ter et 4 ont
+> ajouté quatre gardiens, un mini-jeu et une coupe sur un équilibrage validé par
+> **une seule** session avec un enfant. La question que le plan se posait déjà —
+> « qu'est-ce qui a été difficile ou pas compris ? » — vaut plus que n'importe
+> quelle fonctionnalité restante, et elle vaut maintenant pour cinq façons de
+> jouer au lieu de trois.
 
 ---
 

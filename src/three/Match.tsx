@@ -12,8 +12,9 @@ import { evaluateCrossing } from '../game/scoring'
 import type { ShotOutcome } from '../game/scoring'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
 import type { Mascot as MascotData } from '../data/mascots'
+import type { Keeper as KeeperData } from '../data/keepers'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
-import { Dragon } from './Dragon'
+import { Keeper } from './Keeper'
 import { Character } from './Character'
 import { Mascot } from './Mascot'
 import type { CharacterMode } from './characterRig'
@@ -42,6 +43,7 @@ interface Sim {
 export function Match({
   api,
   character,
+  keeper,
   ballSkin,
   shadowColour,
   mascot,
@@ -51,6 +53,7 @@ export function Match({
 }: {
   api: RefObject<MatchHandle | null>
   character: CharacterData
+  keeper: KeeperData
   ballSkin: BallSkin
   shadowColour: string
   mascot: MascotData
@@ -214,7 +217,7 @@ export function Match({
       <group scale={1.2}>
         <Character data={character} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
-      <Dragon ref={keeperRef} />
+      <Keeper data={keeper} ref={keeperRef} />
       <Mascot data={mascot} home={[1.7, 0, PITCH.ballStart.z - 1.4]} />
 
       <Ball skin={ballSkin} ref={ballRef} />

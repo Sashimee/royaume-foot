@@ -13,6 +13,7 @@ export function HomeScreen() {
   const t = useT()
   const startRound = useGame((s) => s.startRound)
   const goWardrobe = useGame((s) => s.goWardrobe)
+  const startCup = useGame((s) => s.startCup)
   const character = useSave((s) => characterById(s.characterId))
   const stars = useSave((s) => s.stars)
   const muted = useSave((s) => s.muted)
@@ -49,6 +50,10 @@ export function HomeScreen() {
         <BigButton onClick={() => startRound('shoot')}>⚽ {t('mode.shoot')}</BigButton>
         <BigButton onClick={() => startRound('keep')}>🧤 {t('mode.keep')}</BigButton>
         <BigButton onClick={() => startRound('run')}>⭐ {t('mode.run')}</BigButton>
+        <BigButton onClick={() => startRound('tower')}>🧱 {t('mode.tower')}</BigButton>
+        {/* The cup is the only button that plays more than one thing, so it is
+            set apart rather than listed as a fifth mini-game. */}
+        <BigButton onClick={startCup}>🏆 {t('mode.cup')}</BigButton>
         <BigButton tone="secondary" onClick={goWardrobe}>
           👗 {t('home.wardrobe')}
         </BigButton>

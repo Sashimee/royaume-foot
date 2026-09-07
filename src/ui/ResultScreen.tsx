@@ -51,6 +51,12 @@ export function ResultScreen() {
                 <>
                   ⭐ {goals} {t('result.stars')}
                 </>
+              ) : mode === 'tower' ? (
+                /* Blocks have no denominator either: the towers are rebuilt
+                   when they are all down, so there is no fixed number to hit. */
+                <>
+                  🧱 {goals} {t('result.blocks')}
+                </>
               ) : (
                 <>
                   {mode === 'shoot' ? '🥅' : '🧤'} {goals} / {ROUND.shotsPerRound}{' '}

@@ -6,23 +6,26 @@ import { isUnlocked, useSave } from '../store/saveStore'
 import { BALLS, KNIGHTS, PRINCESSES, characterById } from '../data/roster'
 import { STADIUMS } from '../data/stadiums'
 import { MASCOTS, mascotById } from '../data/mascots'
+import { KEEPERS, keeperById } from '../data/keepers'
 import { useT } from '../i18n/useLang'
 import type { TranslationKey } from '../i18n/translations'
 import { Character } from '../three/Character'
 import { Mascot } from '../three/Mascot'
+import { Keeper } from '../three/Keeper'
 import { BigButton, IconButton, PickCard } from './ui'
 import { ScrollArea } from './ScrollArea'
 import { ResetStars } from './ResetStars'
 
 const SKY = 'linear-gradient(180deg, #3b1e6b 0%, #7b3ba1 50%, #ffb3d9 100%)'
 
-type Tab = 'characters' | 'balls' | 'stadiums' | 'mascots'
+type Tab = 'characters' | 'balls' | 'stadiums' | 'mascots' | 'keepers'
 
 const TABS: { id: Tab; badge: string; label: TranslationKey }[] = [
   { id: 'characters', badge: '👑', label: 'wardrobe.title' },
   { id: 'balls', badge: '⚽', label: 'wardrobe.balls' },
   { id: 'stadiums', badge: '🏟️', label: 'wardrobe.stadiums' },
   { id: 'mascots', badge: '🐾', label: 'wardrobe.mascots' },
+  { id: 'keepers', badge: '🧤', label: 'wardrobe.keepers' },
 ]
 
 /**
@@ -44,10 +47,12 @@ export function WardrobeScreen() {
   const ballId = useSave((s) => s.ballId)
   const stadiumId = useSave((s) => s.stadiumId)
   const mascotId = useSave((s) => s.mascotId)
+  const keeperId = useSave((s) => s.keeperId)
   const setCharacter = useSave((s) => s.setCharacter)
   const setBall = useSave((s) => s.setBall)
   const setStadium = useSave((s) => s.setStadium)
   const setMascot = useSave((s) => s.setMascot)
+  const setKeeper = useSave((s) => s.setKeeper)
 
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: SKY }}>
@@ -64,8 +69,19 @@ export function WardrobeScreen() {
         <Canvas dpr={[1, 2]} gl={{ alpha: true, antialias: true }} camera={{ position: [0, 1.4, 3.4], fov: 45 }}>
           <hemisphereLight args={['#ffe9f6', '#7a4a9a', 1.2]} />
           <directionalLight position={[3, 6, 5]} intensity={1.1} />
-          <Character data={characterById(characterId)} showcase position={[0, -0.95, 0]} />
-          <Mascot data={mascotById(mascotId)} home={[0.95, -0.95, 0.45]} />
+          {/* On the keepers tab the preview shows the keeper instead of the pet:
+              they are the one thing a child picks without ever seeing up close,
+              because in play they stand at the far end of the pitch. */}
+          {tab === 'keepers' ? (
+            <group position={[0, -1.15, 0]} scale={0.62}>
+              <Keeper data={keeperById(keeperId)} />
+            </group>
+          ) : (
+            <>
+              <Character data={characterById(characterId)} showcase position={[0, -0.95, 0]} />
+              <Mascot data={mascotById(mascotId)} home={[0.95, -0.95, 0.45]} />
+            </>
+          )}
         </Canvas>
       </div>
 
@@ -136,16 +152,32 @@ export function WardrobeScreen() {
         )}
 
         {tab === 'mascots' && (
+          <Section title={`🐾 ${t('wardrobe.mascots')}`}>
+            {MASCOTS.map((m) => (
+              <PickCard
+                key={m.id}
+                badge={m.badge}
+                selected={m.id === mascotId}
+                locked={!isUnlocked(m.unlockStars, stars)}
+                lockedLabel={`⭐${m.unlockStars}`}
+                onClick={() => setMascot(m.id)}
+              />
+            ))}
+          </Section>
+        )}
+
+        {tab === 'keepers' && (
           <>
-            <Section title={`🐾 ${t('wardrobe.mascots')}`}>
-              {MASCOTS.map((m) => (
+            <Section title={`🧤 ${t('wardrobe.keepers')}`}>
+              {KEEPERS.map((k) => (
                 <PickCard
-                  key={m.id}
-                  badge={m.badge}
-                  selected={m.id === mascotId}
-                  locked={!isUnlocked(m.unlockStars, stars)}
-                  lockedLabel={`⭐${m.unlockStars}`}
-                  onClick={() => setMascot(m.id)}
+                  key={k.id}
+                  badge={k.badge}
+                  name={k.name}
+                  selected={k.id === keeperId}
+                  locked={!isUnlocked(k.unlockStars, stars)}
+                  lockedLabel={`⭐${k.unlockStars}`}
+                  onClick={() => setKeeper(k.id)}
                 />
               ))}
             </Section>

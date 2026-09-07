@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import confetti from 'canvas-confetti'
 import { sfx } from '../audio/sfx'
-import { ROUND, RUN } from '../game/constants'
+import { ROUND, RUN, TOWER } from '../game/constants'
 import type { ShotOutcome } from '../game/scoring'
 import type { GameMode } from '../store/gameStore'
 import { shoutKeyFor, useGame } from '../store/gameStore'
@@ -9,6 +9,7 @@ import { useSave } from '../store/saveStore'
 import { ballById, characterById } from '../data/roster'
 import { stadiumById } from '../data/stadiums'
 import { mascotById } from '../data/mascots'
+import { keeperById } from '../data/keepers'
 import { useT } from '../i18n/useLang'
 import { Scene } from '../three/Scene'
 import { Pitch } from '../three/Pitch'
@@ -19,10 +20,14 @@ import { KeepMatch } from '../three/KeepMatch'
 import type { KeepHandle } from '../three/KeepMatch'
 import { RunMatch } from '../three/RunMatch'
 import type { RunHandle } from '../three/RunMatch'
+import { TowerMatch } from '../three/TowerMatch'
+import type { TowerHandle } from '../three/TowerMatch'
 import { AimOverlay } from './AimOverlay'
 import { KeepOverlay } from './KeepOverlay'
 import { RunHud } from './RunHud'
 import { ResultScreen } from './ResultScreen'
+import { TrophyScreen } from './TrophyScreen'
+import { CupBanner } from './CupBanner'
 import { IconButton } from './ui'
 
 export function PlayScreen() {
@@ -30,12 +35,14 @@ export function PlayScreen() {
   const api = useRef<MatchHandle | null>(null)
   const keepApi = useRef<KeepHandle | null>(null)
   const runApi = useRef<RunHandle | null>(null)
+  const towerApi = useRef<TowerHandle | null>(null)
   const cheerUntil = useRef(0)
 
   const character = useSave((s) => characterById(s.characterId))
   const ballSkin = useSave((s) => ballById(s.ballId))
   const stadium = useSave((s) => stadiumById(s.stadiumId))
   const mascot = useSave((s) => mascotById(s.mascotId))
+  const keeper = useSave((s) => keeperById(s.keeperId))
   const addStars = useSave((s) => s.addStars)
 
   const screen = useGame((s) => s.screen)
@@ -45,11 +52,13 @@ export function PlayScreen() {
   const earnedStars = useGame((s) => s.earnedStars)
   const recordShot = useGame((s) => s.recordShot)
   const recordSave = useGame((s) => s.recordSave)
+  const recordSmash = useGame((s) => s.recordSmash)
   const collectStar = useGame((s) => s.collectStar)
   const finishRun = useGame((s) => s.finishRun)
   const finishRound = useGame((s) => s.finishRound)
   const goHome = useGame((s) => s.goHome)
 
+  const cupLeg = useGame((s) => s.cupLeg)
   const roundOver = useGame((s) => s.roundOver)
   const awarded = useRef(false)
 
@@ -83,6 +92,19 @@ export function PlayScreen() {
       }
     },
     [recordSave],
+  )
+
+  const handleSmash = useCallback(
+    (knocked: number) => {
+      recordSmash(knocked)
+      if (knocked > 0) {
+        sfx.goal()
+        burst(Math.min(1.4, 0.5 + knocked * 0.25))
+      } else {
+        sfx.save()
+      }
+    },
+    [recordSmash],
   )
 
   const handleCollect = useCallback(
@@ -124,12 +146,13 @@ export function PlayScreen() {
   return (
     <div className="absolute inset-0">
       <Scene sky={stadium.sky}>
-        <Pitch stadium={stadium} showTargets={mode === 'shoot'} showGoal={mode !== 'run'} />
+        <Pitch stadium={stadium} showTargets={mode === 'shoot'} showGoal={mode !== 'run' && mode !== 'tower'} />
         <Crowd cheerUntil={cheerUntil} />
         {mode === 'shoot' ? (
           <Match
             api={api}
             character={character}
+            keeper={keeper}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
             mascot={mascot}
@@ -141,12 +164,24 @@ export function PlayScreen() {
           <KeepMatch
             api={keepApi}
             character={character}
+            shooter={keeper}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
             mascot={mascot}
             frozen={roundOver}
             cheerUntil={cheerUntil}
             onResult={handleSave}
+          />
+        ) : mode === 'tower' ? (
+          <TowerMatch
+            api={towerApi}
+            character={character}
+            ballSkin={ballSkin}
+            shadowColour={stadium.shadow}
+            mascot={mascot}
+            frozen={roundOver}
+            cheerUntil={cheerUntil}
+            onSmash={handleSmash}
           />
         ) : (
           <RunMatch
@@ -173,6 +208,15 @@ export function PlayScreen() {
               api.current?.shoot(shot)
             }}
           />
+        ) : mode === 'tower' ? (
+          <AimOverlay
+            hint={t('tower.hint')}
+            canShoot={() => towerApi.current?.isReady() ?? false}
+            onShoot={(shot) => {
+              sfx.kick()
+              towerApi.current?.shoot(shot)
+            }}
+          />
         ) : mode === 'keep' ? (
           <KeepOverlay hint={t('keep.hint')} onAim={(x) => keepApi.current?.aimAt(x)} />
         ) : (
@@ -181,8 +225,10 @@ export function PlayScreen() {
 
       <Hud shotsTaken={shotsTaken} goals={goals} mode={mode} onQuit={goHome} progress={() => runApi.current?.progress() ?? 0} />
       <Shout />
+      {cupLeg !== null && screen === 'play' && <CupBanner leg={cupLeg} />}
 
       {screen === 'result' && <ResultScreen />}
+      {screen === 'trophy' && <TrophyScreen />}
     </div>
   )
 }
@@ -218,8 +264,8 @@ function Hud({
           <RunHud progress={progress} />
         ) : (
           <div data-testid="shots" className="flex gap-1 rounded-full bg-black/30 px-4 py-2 backdrop-blur-sm" role="img"
-            aria-label={`${ROUND.shotsPerRound - shotsTaken} / ${ROUND.shotsPerRound}`}>
-            {Array.from({ length: ROUND.shotsPerRound }, (_, i) => (
+            aria-label={`${shotsFor(mode) - shotsTaken} / ${shotsFor(mode)}`}>
+            {Array.from({ length: shotsFor(mode) }, (_, i) => (
               <span key={i} className={`text-2xl ${i < shotsTaken ? 'opacity-25 grayscale' : ''}`}>
                 ⚽
               </span>
@@ -228,13 +274,18 @@ function Hud({
         )}
         <div className="flex items-center gap-3 rounded-full bg-black/30 px-4 py-2 backdrop-blur-sm">
           <span className="text-2xl font-black text-white">
-            {mode === 'shoot' ? '🥅' : mode === 'keep' ? '🧤' : '✨'} {goals}
+            {mode === 'shoot' ? '🥅' : mode === 'keep' ? '🧤' : mode === 'tower' ? '🧱' : '✨'} {goals}
           </span>
           <span className="text-2xl font-black text-yellow-200">⭐ {stars}</span>
         </div>
       </div>
     </div>
   )
+}
+
+/** How many attempts a round of this mode gets. */
+function shotsFor(mode: GameMode): number {
+  return mode === 'tower' ? TOWER.shotsPerRound : ROUND.shotsPerRound
 }
 
 /** The big shout after each shot. Keyed on shoutId so it replays every time. */
@@ -258,7 +309,7 @@ function Shout() {
         key={shoutId}
         className="animate-pop-in text-center text-6xl font-black tracking-tight text-white drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]"
       >
-        {outcome === 'goal' || outcome === 'saved' ? '🎉 ' : ''}
+        {outcome === 'goal' || outcome === 'saved' || outcome === 'smash' ? '🎉 ' : ''}
         {t(shoutKeyFor(outcome))}
       </p>
     </div>

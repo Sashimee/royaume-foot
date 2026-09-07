@@ -203,6 +203,16 @@ test.describe('wardrobe', () => {
     await expect(page.getByTestId('scroll-more')).toBeVisible()
   })
 
+  test('puts the keepers behind their own tab', async ({ page }) => {
+    await page.goto('./')
+    await page.getByRole('button', { name: DRESS }).first().click()
+    await page.getByRole('tab', { name: /my keeper|mon gardien/i }).click()
+
+    // Braise is free from the first launch, so he is pickable on a fresh save.
+    await expect(page.getByRole('button', { name: 'Braise' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /my keeper|mon gardien/i })).toBeVisible()
+  })
+
   test('keeps each kind of item behind its own tab', async ({ page }) => {
     await page.goto('./')
     await page.getByRole('button', { name: DRESS }).first().click()
@@ -227,7 +237,9 @@ test.describe('wardrobe', () => {
     )
     await page.reload()
     await page.getByRole('button', { name: DRESS }).first().click()
-    await page.getByRole('tab', { name: /my friend|mon copain/i }).click()
+    // Starting over lives at the foot of the LAST tab, deliberately out of a
+    // child's casual path through the wardrobe.
+    await page.getByRole('tab', { name: /my keeper|mon gardien/i }).click()
 
     await page.getByRole('button', { name: /start over|recommencer/i }).first().click()
 
@@ -244,3 +256,45 @@ test.describe('wardrobe', () => {
 async function savedStars(page: Page): Promise<number> {
   return page.evaluate(() => JSON.parse(localStorage.getItem('royaume-foot:save:v1') ?? '{}').stars ?? -1)
 }
+
+test.describe('Casse-tour', () => {
+  const TOWER_MODE = /casse-tours|smash the towers|türme umwerfen|tira las torres|abbatti le torri|derruba as torres/i
+
+  test('plays a round of towers and always ends in a reward', async ({ page }) => {
+    test.setTimeout(180_000)
+
+    await page.goto('./')
+    await page.getByRole('button', { name: TOWER_MODE }).first().click()
+
+    // It counts attempts, like the shooting mode.
+    await expect(page.getByTestId('shots')).toBeVisible()
+
+    // A shot that hits nothing runs to SHOT_TIMEOUT (4.5s) and then settles for
+    // another 1.9s before the next one is accepted. Swiping faster than that
+    // silently drops shots, and the round never ends.
+    for (let i = 0; i < 8; i++) {
+      await page.mouse.move(195, 700)
+      await page.mouse.down()
+      await page.mouse.move(195, 430)
+      await page.mouse.up()
+      await page.waitForTimeout(6800)
+    }
+
+    const again = page.getByRole('button', { name: /Encore|Again|Nochmal|Otra vez|Ancora|Outra/ })
+    await expect(again).toBeVisible({ timeout: 40_000 })
+    // No fail state: even a round that knocks nothing over pays out a star.
+    await expect(page.getByText(/⭐/).first()).toBeVisible()
+  })
+})
+
+test.describe('Coupe du Royaume', () => {
+  const CUP_MODE = /coupe du royaume|kingdom cup|königreich-pokal|copa del reino|coppa del regno|taça do reino/i
+
+  test('is offered from the menu and opens on the first leg', async ({ page }) => {
+    await page.goto('./')
+    await page.getByRole('button', { name: CUP_MODE }).first().click()
+
+    // The banner is how a child knows this round is part of something longer.
+    await expect(page.getByText(/1\/4/)).toBeVisible()
+  })
+})

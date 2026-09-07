@@ -7,8 +7,9 @@ import type { Attempt } from '../game/keeperGame'
 import { ballPosAt, isSave, makeAttempt, seededRandom, stepPlayerKeeper } from '../game/keeperGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
 import type { Mascot as MascotData } from '../data/mascots'
+import type { Keeper as KeeperData } from '../data/keepers'
 import { Ball, BlobShadow } from './Ball'
-import { Dragon } from './Dragon'
+import { Keeper } from './Keeper'
 import { Character } from './Character'
 import { Mascot } from './Mascot'
 import type { CharacterMode } from './characterRig'
@@ -30,7 +31,7 @@ interface Sim {
 }
 
 /**
- * "Gardienne du château": the child stands in goal and a friendly dragon shoots.
+ * "Gardienne du château": the child stands in goal and a friendly monster shoots.
  *
  * Same camera as the shooting mode, which is not laziness — it means the child
  * sees the princess's *face* rather than her back, and the goal is already
@@ -39,6 +40,7 @@ interface Sim {
 export function KeepMatch({
   api,
   character,
+  shooter,
   ballSkin,
   shadowColour,
   mascot,
@@ -48,6 +50,8 @@ export function KeepMatch({
 }: {
   api: RefObject<KeepHandle | null>
   character: CharacterData
+  /** The chosen keeper, who takes the shots in this mode. */
+  shooter: KeeperData
   ballSkin: BallSkin
   shadowColour: string
   mascot: MascotData
@@ -138,12 +142,12 @@ export function KeepMatch({
       ;(shadow.material as THREE.MeshBasicMaterial).opacity = Math.max(0.05, 0.3 - lift * 0.03)
     }
 
-    const shooter = shooterRef.current
-    if (shooter) {
-      shooter.position.x = s.attempt.fromX
+    const striker = shooterRef.current
+    if (striker) {
+      striker.position.x = s.attempt.fromX
       // A little lunge on the kick, so the shot has a visible cause.
       const lunge = s.phase === 'flight' ? Math.max(0, 1 - s.t / 0.3) : 0
-      shooter.position.z = KEEP.shooterZ + 0.6 - lunge * 0.6
+      striker.position.z = KEEP.shooterZ + 0.6 - lunge * 0.6
     }
 
     const ring = ringRef.current
@@ -178,9 +182,9 @@ export function KeepMatch({
         </group>
       </group>
 
-      {/* The dragon takes the shots in this mode, so he turns to face the goal. */}
+      {/* The keeper takes the shots in this mode, so they turn to face the goal. */}
       <group ref={shooterRef} rotation={[0, Math.PI, 0]}>
-        <Dragon />
+        <Keeper data={shooter} />
       </group>
 
       <Mascot data={mascot} follow={playerRef} offset={[1.5, 0, 0.9]} />

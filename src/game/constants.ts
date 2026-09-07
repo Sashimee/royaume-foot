@@ -232,3 +232,58 @@ export const RUN = {
   twoStarScore: 16,
   threeStarScore: 28,
 } as const
+
+/**
+ * "Casse-tour" — the child flicks the ball at stacks of blocks and knocks them
+ * down.
+ *
+ * The same flick as the shooting mode, aimed at something that visibly falls
+ * over. Nothing is defended and nothing can be lost: the only question a shot
+ * asks is *how many*, which is the easiest question in the game to understand
+ * and the most satisfying to answer.
+ */
+export const TOWER = {
+  shotsPerRound: 5,
+  /** Cube edge length. Big enough that one block is an obvious thing to aim at. */
+  blockSize: 0.62,
+  /** Towers stand on this line, near the goal so the camera framing still fits. */
+  z: -9.5,
+  /** How many towers, and how tall each one is. */
+  columns: 3,
+  height: 4,
+  /** Sideways gap between tower centres. */
+  spacing: 2.6,
+  /**
+   * A block is knocked when the ball's centre comes within this of the block's
+   * own half-extent. Generously above a strict box test — a shot that visibly
+   * grazes a tower must topple it, or the child is being told their eyes are
+   * wrong.
+   */
+  hitPadding: 0.28,
+  /** Downward acceleration for a falling block. */
+  gravity: -14,
+  /** Sideways scatter a knocked block picks up, in units/s. */
+  scatter: 2.4,
+  /** A block below this height has landed and stops moving. */
+  floorY: 0.05,
+  /** Blocks left standing are cleared and rebuilt after this long. */
+  settle: 1.9,
+  twoStarBlocks: 7,
+  threeStarBlocks: 11,
+} as const
+
+/**
+ * "Coupe du Royaume" — the four mini-games back to back, then a trophy.
+ *
+ * The cup awards its own stars on top of whatever the legs earn, so finishing
+ * it is always worth more than playing four rounds separately. There is no way
+ * to fail out of it: a leg that goes badly still advances.
+ */
+export const CUP = {
+  /** The legs, in order. Shooting first because it is the one everybody knows. */
+  legs: ['shoot', 'keep', 'run', 'tower'] as const,
+  /** Bonus stars for lifting the trophy at all. */
+  finishBonus: 2,
+  /** Extra stars if every leg earned three. */
+  perfectBonus: 3,
+} as const

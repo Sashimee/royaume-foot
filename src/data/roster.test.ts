@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BALLS, CHARACTERS, KNIGHTS, PRINCESSES, characterById, nextUnlock } from './roster'
 import { STADIUMS, stadiumById } from './stadiums'
 import { MASCOTS, mascotById } from './mascots'
+import { KEEPERS, keeperById } from './keepers'
 
 describe('roster', () => {
   it('offers both kinds of character', () => {
@@ -39,7 +40,9 @@ describe('roster', () => {
   it('has nothing left to unlock once every threshold is passed', () => {
     // Every kind of unlockable counts, stadiums included — the teaser reads
     // from all of them.
-    const highest = Math.max(...[...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS].map((i) => i.unlockStars))
+    const highest = Math.max(
+      ...[...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS].map((i) => i.unlockStars),
+    )
     expect(nextUnlock(highest)).toBeNull()
   })
 })
@@ -73,7 +76,9 @@ describe('stadiums', () => {
     // The real property, rather than "the last unlock is a stadium": a child
     // should always have a reward within a couple of rounds. A ten-star gap is
     // a grind at this age, whatever sits on either side of it.
-    const thresholds = [...new Set([...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS].map((i) => i.unlockStars))]
+    const thresholds = [
+      ...new Set([...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS].map((i) => i.unlockStars)),
+    ]
       .sort((a, b) => a - b)
     const gaps = thresholds.slice(1).map((n, i) => n - thresholds[i])
     expect(Math.max(...gaps)).toBeLessThanOrEqual(6)
@@ -99,5 +104,40 @@ describe('mascots', () => {
     // bug rather than like a pet.
     const kinds = new Set(MASCOTS.map((m) => m.kind))
     expect(kinds.size).toBe(MASCOTS.length)
+  })
+})
+
+describe('keepers', () => {
+  it('gives a keeper to play against from the very first launch', () => {
+    // Without a free one the shooting mode has an empty goal on a new save.
+    expect(KEEPERS.filter((k) => k.unlockStars === 0).length).toBeGreaterThan(0)
+  })
+
+  it('has unique ids', () => {
+    const ids = KEEPERS.map((k) => k.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('falls back to a real keeper for an unknown id', () => {
+    expect(keeperById('nobody').unlockStars).toBe(0)
+  })
+
+  it('draws every keeper kind', () => {
+    // A kind with no branch in three/Keeper.tsx renders nothing at all, which
+    // in shooting mode is an empty goal rather than an obvious crash.
+    const kinds = new Set(KEEPERS.map((k) => k.kind))
+    expect(kinds.size).toBe(KEEPERS.length)
+  })
+
+  it('gives every keeper a badge and a full palette', () => {
+    // A missing colour renders as black. On a keeper standing in the goal that
+    // reads as a hole in the world, and it is very easy to miss when adding one.
+    for (const k of KEEPERS) {
+      expect(k.badge.length).toBeGreaterThan(0)
+      for (const [key, value] of Object.entries(k)) {
+        if (key === 'unlockStars') continue
+        expect(typeof value === 'string' && value.length > 0).toBe(true)
+      }
+    }
   })
 })
