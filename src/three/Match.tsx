@@ -15,12 +15,22 @@ import type { Mascot as MascotData } from '../data/mascots'
 import type { Keeper as KeeperData } from '../data/keepers'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
 import { Keeper } from './Keeper'
+import { KeeperCheerContext } from './keeperRig'
 import { Character } from './Character'
 import { Mascot } from './Mascot'
 import type { CharacterMode } from './characterRig'
 
-/** How long the ball is left on screen after a shot is judged. */
-const SETTLE_TIME = 1.9
+/**
+ * How long the ball is left on screen after a shot is judged.
+ *
+ * It must stay above the 1.5 s the shout lives for in `PlayScreen`, or the
+ * celebration gets cut off mid-word. It was 1.9, which left 0.4 s of dead air
+ * per attempt after the shout had already faded — eight seconds across a cup.
+ */
+const SETTLE_TIME = 1.6
+
+/** How long the keeper waves after a shot that did not go in. */
+const KEEPER_CHEER_TIME = 1.4
 
 export interface MatchHandle {
   shoot: (shot: Shot) => void
@@ -73,6 +83,8 @@ export function Match({
   const axis = useMemo(() => new THREE.Vector3(), [])
   /** Latest render clock, so non-frame code can schedule against it. */
   const now = useRef(0)
+  /** Seconds of wave the keeper still owes the child. Read by `useKeeperRig`. */
+  const keeperCheer = useRef(0)
 
   // Mirrored into refs so the imperative handle below can be installed once
   // while still reading current values.
@@ -200,6 +212,11 @@ export function Match({
       s.ball.spin = 0
     }
 
+    // Rule 3: a shot that did not go in is answered with a wave, never with a
+    // keeper who simply gets on with the next one. A goal needs no wave — the
+    // child already has confetti and a shout.
+    if (verdict.outcome !== 'goal') keeperCheer.current = KEEPER_CHEER_TIME
+
     settle(s, verdict.outcome, verdict.target)
   }
 
@@ -217,7 +234,9 @@ export function Match({
       <group scale={1.2}>
         <Character data={character} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
-      <Keeper data={keeper} ref={keeperRef} />
+      <KeeperCheerContext value={keeperCheer}>
+        <Keeper data={keeper} ref={keeperRef} />
+      </KeeperCheerContext>
       <Mascot data={mascot} home={[1.7, 0, PITCH.ballStart.z - 1.4]} />
 
       <Ball skin={ballSkin} ref={ballRef} />

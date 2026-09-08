@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
+import { sfx } from '../audio/sfx'
 import { shotFromDrag } from '../game/aim'
 import type { Shot } from '../game/aim'
 import { SHOT } from '../game/constants'
@@ -26,12 +27,22 @@ export function AimOverlay({
   hint: string
 }) {
   const start = useRef<Point | null>(null)
+  /** Whether the drag that is happening right now can actually become a shot. */
+  const armed = useRef(false)
   const [current, setCurrent] = useState<Point | null>(null)
 
+  /**
+   * A flick that arrives while the last ball is still coming back used to be
+   * swallowed whole: this returned before `setPointerCapture`, so there was no
+   * line, no sound and no sign the game had noticed. A six-year-old reads that
+   * as broken and flicks harder, which lands even earlier. The game always
+   * answers now — it just answers "not yet" instead of nothing.
+   */
   function down(e: ReactPointerEvent<HTMLDivElement>) {
-    if (!canShoot()) return
     e.currentTarget.setPointerCapture(e.pointerId)
     start.current = { x: e.clientX, y: e.clientY }
+    armed.current = canShoot()
+    if (!armed.current) sfx.nudge()
     setCurrent({ x: e.clientX, y: e.clientY })
   }
 
@@ -42,9 +53,11 @@ export function AimOverlay({
 
   function up(e: ReactPointerEvent<HTMLDivElement>) {
     const from = start.current
+    const wasArmed = armed.current
     start.current = null
+    armed.current = false
     setCurrent(null)
-    if (!from || !canShoot()) return
+    if (!from || !wasArmed || !canShoot()) return
 
     const shot = shotFromDrag({
       startX: from.x,
@@ -58,7 +71,10 @@ export function AimOverlay({
   }
 
   const dragging = start.current !== null && current !== null
-  const power = dragging ? powerOf(start.current!, current!) : 0
+  // Shown dimmed, with no power ring: it is a trace of the gesture, not a shot
+  // being charged, and it must not promise a kick that is not coming.
+  const waiting = dragging && !armed.current
+  const power = dragging && !waiting ? powerOf(start.current!, current!) : 0
 
   return (
     <div
@@ -81,21 +97,30 @@ export function AimOverlay({
             y1={start.current!.y}
             x2={current!.x}
             y2={current!.y}
-            stroke="url(#aim)"
+            stroke={waiting ? '#ffffff' : 'url(#aim)'}
+            strokeOpacity={waiting ? 0.3 : 1}
             strokeWidth={14}
             strokeLinecap="round"
             strokeDasharray="2 22"
           />
+          {!waiting && (
+            <circle
+              cx={start.current!.x}
+              cy={start.current!.y}
+              r={26 + power * 26}
+              fill="none"
+              stroke="#ffe066"
+              strokeOpacity={0.5 + power * 0.5}
+              strokeWidth={6}
+            />
+          )}
           <circle
-            cx={start.current!.x}
-            cy={start.current!.y}
-            r={26 + power * 26}
-            fill="none"
-            stroke="#ffe066"
-            strokeOpacity={0.5 + power * 0.5}
-            strokeWidth={6}
+            cx={current!.x}
+            cy={current!.y}
+            r={14}
+            fill="#fff3b0"
+            fillOpacity={waiting ? 0.35 : 1}
           />
-          <circle cx={current!.x} cy={current!.y} r={14} fill="#fff3b0" />
         </svg>
       )}
 
