@@ -96,7 +96,15 @@ test.describe('Royaume Foot', () => {
     await amara.click()
     await expect(amara).toHaveAttribute('aria-pressed', 'true')
 
-    await expect(page.getByRole('button', { name: /Freya/ })).toBeDisabled()
+    // A locked card is deliberately *pressable* — it answers a tap with a sound
+    // rather than the silence a child reads as broken — so "locked" can no
+    // longer mean `disabled`. What must hold is that pressing it changes
+    // nothing: this asserts the behaviour rather than the attribute, and it is
+    // the assertion that catches a locked princess actually being selected.
+    const freya = page.getByRole('button', { name: /Freya/ })
+    await freya.click()
+    await expect(freya).toHaveAttribute('aria-pressed', 'false')
+    await expect(amara).toHaveAttribute('aria-pressed', 'true')
 
     // Knights share the picker with the princesses, and one is free from the
     // start so a child who wants a knight can have one immediately.

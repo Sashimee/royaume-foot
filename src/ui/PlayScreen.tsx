@@ -5,6 +5,7 @@ import { ROUND, RUN, TOWER } from '../game/constants'
 import type { ShotOutcome } from '../game/scoring'
 import type { GameMode } from '../store/gameStore'
 import { shoutKeyFor, useGame } from '../store/gameStore'
+import type { RoundOutcome } from '../store/gameStore'
 import { useSave } from '../store/saveStore'
 import { ballById, characterById } from '../data/roster'
 import { stadiumById } from '../data/stadiums'
@@ -297,6 +298,23 @@ function shotsFor(mode: GameMode): number {
   return mode === 'tower' ? TOWER.shotsPerRound : ROUND.shotsPerRound
 }
 
+/**
+ * The picture that goes with each shout, so none of them is words alone.
+ * Warm on the misses on purpose: 👏 and 💪 congratulate the attempt, and
+ * nothing here is allowed to read as a telling-off.
+ */
+const SHOUT_EMOJI: Record<RoundOutcome, string> = {
+  goal: '🎉',
+  saved: '🎉',
+  smash: '🎉',
+  save: '👏',
+  conceded: '💪',
+  nudge: '👏',
+  post: '😮',
+  over: '💪',
+  wide: '💪',
+}
+
 /** The big shout after each shot. Keyed on shoutId so it replays every time. */
 function Shout() {
   const t = useT()
@@ -313,12 +331,22 @@ function Shout() {
   if (!outcome) return null
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+    // Top third, not dead centre: centred, the shout landed squarely on the
+    // toppling tower or the diving keeper — the one second of payoff the child
+    // is actually watching for, hidden behind a word they cannot read. The band
+    // above the goal is empty sky in every mode.
+    <div className="pointer-events-none absolute inset-0 flex items-start justify-center pt-28">
       <p
         key={shoutId}
-        className="animate-pop-in text-center text-6xl font-black tracking-tight text-white drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]"
+        className="animate-pop-in max-w-[92vw] break-words text-center text-[clamp(2rem,11vw,3.75rem)]
+          font-black tracking-tight text-white drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]"
       >
-        {outcome === 'goal' || outcome === 'saved' || outcome === 'smash' ? '🎉 ' : ''}
+        {/* Every outcome carries a picture. Rule 2 is not "most controls" — a
+            save, a miss and a post used to be a bare white word, which is the
+            game's most frequent moment and its only text-only one. To a
+            non-reader the pattern read as "sometimes a party, sometimes a
+            blob", and the blob is exactly the punishment rule 3 forbids. */}
+        {SHOUT_EMOJI[outcome]}{' '}
         {t(shoutKeyFor(outcome))}
       </p>
     </div>

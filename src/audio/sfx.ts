@@ -125,6 +125,18 @@ export const sfx = {
     tone({ type: 'sine', from: 660, to: 880, duration: 0.09, gain: 0.12 })
   },
 
+  /**
+   * "I saw you, the ball is still coming back." Played when a flick lands
+   * before the game can accept it, which used to produce nothing at all.
+   *
+   * It has to be the quietest thing in here and it has to curve *up*: a child
+   * flicking early has done nothing wrong, and a downward blip in that moment
+   * is a buzzer by another name.
+   */
+  nudge() {
+    tone({ type: 'sine', from: 440, to: 560, duration: 0.11, gain: 0.07 })
+  },
+
   star() {
     ;[659, 880, 1319].forEach((f, i) =>
       tone({ type: 'triangle', from: f, duration: 0.3, gain: 0.14, delay: i * 0.14 }),

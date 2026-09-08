@@ -267,7 +267,7 @@ export const TOWER = {
   /** A block below this height has landed and stops moving. */
   floorY: 0.05,
   /** Blocks left standing are cleared and rebuilt after this long. */
-  settle: 1.9,
+  settle: 1.6,
   twoStarBlocks: 7,
   threeStarBlocks: 11,
 } as const
