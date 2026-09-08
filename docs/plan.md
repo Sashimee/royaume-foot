@@ -150,7 +150,7 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 >   trois partaient hors du cadre**. C'est le harnais d'équilibrage qui l'a
 >   révélé, pas la lecture du code.
 
-**Phase 3 — Contenu — 🟡 les 3 mini-jeux sont faits ; décors restants**
+**Phase 3 — Contenu — ✅ fait**
 - ✅ **Mini-jeu 2 « Gardienne du château »** : la princesse est en cage, le
   dragon tire. Contrôle par glissement direct (elle suit le doigt le long de la
   ligne), tir **télégraphié** par un anneau de visée une seconde avant la
@@ -166,7 +166,31 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   sélection dans le vestiaire.
 - ✅ **4 mascottes** (chat, lapin, licorne, dragonnet) : un compagnon qui suit
   le personnage avec du retard dans les trois modes, débloqué par étoiles.
-- ⬜ Carte du royaume.
+- ✅ **Carte du royaume** : le choix du mini-jeu n'est plus une grille de quatre
+  boutons identiques, c'est une carte — une île, un château, une route en
+  pointillés, la forêt, les montagnes enneigées et la prairie aux étoiles.
+
+  Le raisonnement est celui de la règle 1 (aucune lecture obligatoire) : quatre
+  boutons roses qui ne diffèrent que par leur libellé et leur emoji ne laissent
+  rien à retenir à un enfant qui ne lit pas. Sur une carte, le but est **en haut
+  près du château** et les étoiles sont **en bas à gauche** — c'est une mémoire
+  qu'on a déjà à six ans, celle des pièces d'une maison. On part toujours en un
+  seul geste depuis le menu : la carte *est* le sélecteur, pas un écran de plus
+  sur le chemin, sinon le menu passerait à trois niveaux.
+
+  **La route suit l'ordre de la coupe** (`CUP.legs`), et c'est ce qui explique la
+  Coupe du Royaume sans un mot : un tour de l'île, pas un cinquième mini-jeu. Un
+  test tient les deux ordres synchronisés, et trois autres tiennent la géométrie
+  — médaillons de 72 px qui ne se touchent pas, plaques de nom qui ne se
+  chevauchent pas, tout ce qui dépasse resterait dans le cadre — parce que ces
+  collisions-là arrivent sur un téléphone de 320 px et pas sur l'écran où on
+  dessine.
+
+  *Coût de place :* la carte prend ~320 px là où la grille en prenait ~140. Le
+  vestiaire reste visible sans défiler sur un 390 × 844 (le personnage du menu
+  est passé de 160 à 128 px de haut, le bouton de la coupe en version compacte),
+  mais la rangée des langues est désormais sous la ligne de flottaison, avec
+  l'affordance de défilement pour le dire.
 
 > **Écart :** un seul des deux mini-jeux prévus. Livrer le second à moitié aurait
 > coûté la qualité du premier ; la trajectoire du ballon en mode gardienne est

@@ -7,6 +7,9 @@ import { LANGS } from "../i18n/translations";
 import { Character } from "../three/Character";
 import { BigButton, IconButton } from "./ui";
 import { ScrollArea } from "./ScrollArea";
+import { KingdomMap } from "./KingdomMap";
+import { MODE_BADGES } from "./mapPlaces";
+import { CUP_LEGS } from "../game/cup";
 
 const SKY = "linear-gradient(180deg, #4a1e6b 0%, #a13b91 45%, #ff9ec4 100%)";
 
@@ -43,10 +46,10 @@ export function HomeScreen() {
       </h1>
 
       {/* The chosen princess, waving from the menu. A fixed height, like the
-          wardrobe's showcase: with five games plus the wardrobe below, a
-          `flex-1` canvas was squeezed to zero on a phone and the character
-          silently disappeared from the menu. */}
-      <div className="h-40 shrink-0">
+          wardrobe's showcase: with the map and the wardrobe below, a `flex-1`
+          canvas was squeezed to zero on a phone and the character silently
+          disappeared from the menu. The map took the height it gave up. */}
+      <div className="h-32 shrink-0">
         <Canvas
           dpr={[1, 2]}
           gl={{ alpha: true, antialias: true }}
@@ -58,35 +61,27 @@ export function HomeScreen() {
         </Canvas>
       </div>
 
-      {/* Six things to press, in six languages, down to a 360×640 phone. On
-          anything taller they all fit and nothing scrolls; on the smallest
-          screens this scrolls and says so, which is what ScrollArea is for. */}
+      {/* Everything a child taps — the four places, the cup, the wardrobe — is
+          above the fold on a 390×844 phone; the row of flags is not, and on a
+          360×640 the cup and the wardrobe are not either. That is what
+          ScrollArea is for: it fades its edge and floats an arrow rather than
+          ending in a flat cut a child reads as the end of the screen. */}
       <ScrollArea className="px-4">
         <div className="flex flex-col items-center gap-2 pb-2">
           <p className="text-lg font-bold text-white/85">{t("home.pick")}</p>
 
-          {/* Two by two rather than a column of four: the labels are long in six
-            languages, and stacked they pushed the character off the screen.
-            The emoji leads in every cell, so the grid is readable without them. */}
-          <div className="grid w-full max-w-sm grid-cols-2 gap-2">
-            <BigButton compact onClick={() => startRound("shoot")}>
-              ⚽ {t("mode.shoot")}
-            </BigButton>
-            <BigButton compact onClick={() => startRound("keep")}>
-              🧤 {t("mode.keep")}
-            </BigButton>
-            <BigButton compact onClick={() => startRound("run")}>
-              ⭐ {t("mode.run")}
-            </BigButton>
-            <BigButton compact onClick={() => startRound("tower")}>
-              🧱 {t("mode.tower")}
-            </BigButton>
-          </div>
+          <KingdomMap onPick={startRound} />
 
-          {/* The cup plays all four, so it spans the width rather than sitting in
-            the grid as though it were a fifth mini-game. */}
+          {/* The cup visits all four places, so it spans the width under the map
+            rather than sitting on it as though it were a fifth destination. The
+            badges are the map's own, in the order the road runs. */}
           <div className="flex w-full max-w-sm flex-col gap-2">
-            <BigButton onClick={startCup}>🏆 {t("mode.cup")}</BigButton>
+            <BigButton compact onClick={startCup}>
+              🏆 {t("mode.cup")}
+              <span className="ml-2 whitespace-nowrap text-base">
+                {CUP_LEGS.map((mode) => MODE_BADGES[mode]).join(" ")}
+              </span>
+            </BigButton>
             <BigButton tone="secondary" onClick={goWardrobe}>
               👗 {t("home.wardrobe")}
             </BigButton>
