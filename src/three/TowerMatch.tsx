@@ -177,10 +177,10 @@ export function TowerMatch({
       const mesh = blockRefs.current.get(b.id)
       if (!mesh) continue
       mesh.position.set(b.x, b.y, b.z)
-      if (b.v !== null && !b.landed) {
-        mesh.rotation.z += b.spin * dt
-        mesh.rotation.x += b.spin * 0.4 * dt
-      }
+      // Read, never accumulated: a rebuilt tower has to come back square, and
+      // `+=` on the mesh survived the rebuild while the state did not.
+      mesh.rotation.z = b.angle
+      mesh.rotation.x = b.angle * 0.4
     }
   })
 

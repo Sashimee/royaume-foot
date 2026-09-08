@@ -24,8 +24,17 @@ export interface Block {
   z: number
   /** Null while standing; a velocity once knocked. */
   v: Vec3 | null
-  /** Spin picked up on the way down, radians/s, for the scene to apply. */
+  /** Spin picked up on the way down, radians/s. */
   spin: number
+  /**
+   * How far it has tumbled, in radians.
+   *
+   * Held here rather than accumulated onto the mesh, so the scene stays a pure
+   * read of this state. It was a `mesh.rotation.z +=` in the frame loop, and
+   * nothing reset it when the towers were rebuilt — so the second set of towers
+   * was stacked out of the tilted blocks left over from the first.
+   */
+  angle: number
   /** True once it has come to rest on the ground. */
   landed: boolean
 }
@@ -56,6 +65,7 @@ export function makeTowers(): TowerState {
         z: TOWER.z,
         v: null,
         spin: 0,
+        angle: 0,
         landed: false,
       })
       id += 1
@@ -88,10 +98,11 @@ export function stepTowers(state: TowerState, dt: number): TowerState {
     if (b.v === null || b.landed) return b
     const v = { x: b.v.x, y: b.v.y + TOWER.gravity * dt, z: b.v.z }
     const y = b.y + v.y * dt
+    const angle = b.angle + b.spin * dt
     if (y <= TOWER.floorY) {
-      return { ...b, x: b.x + v.x * dt, y: TOWER.floorY, z: b.z + v.z * dt, v, landed: true }
+      return { ...b, x: b.x + v.x * dt, y: TOWER.floorY, z: b.z + v.z * dt, v, angle, landed: true }
     }
-    return { ...b, x: b.x + v.x * dt, y, z: b.z + v.z * dt, v }
+    return { ...b, x: b.x + v.x * dt, y, z: b.z + v.z * dt, v, angle }
   })
   return { ...state, blocks, justKnocked: [] }
 }

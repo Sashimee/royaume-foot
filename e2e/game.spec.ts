@@ -297,6 +297,47 @@ test.describe('Coupe du Royaume', () => {
     // The banner is how a child knows this round is part of something longer.
     await expect(page.getByText(/1\/4/)).toBeVisible()
   })
+
+  test('plays all four legs and hands over the trophy', async ({ page }) => {
+    // The slow test that earns its place: finishing the cup used to unmount
+    // everything and leave a child on a blank page at the moment they had won,
+    // because App only rendered PlayScreen for 'play' and 'result'. Nothing
+    // short of playing to the end catches that.
+    test.setTimeout(420_000)
+
+    await page.goto('./')
+    await page.getByRole('button', { name: CUP_MODE }).first().click()
+    await expect(page.getByText(/1\/4/)).toBeVisible()
+
+    const trophy = page.getByRole('button', { name: /rejouer|play again/i })
+    const deadline = Date.now() + 300_000
+
+    // The legs need different gestures, and the cup rolls straight from one into
+    // the next. Rather than script each, do both gestures every time: a swipe
+    // that shoots or smashes, and a drag that steers a keeper or a runner.
+    //
+    // The pause is sized for the SLOWEST leg. A tower shot that hits nothing
+    // runs to SHOT_TIMEOUT and then settles, ~6.4s before the next is accepted;
+    // swiping faster than that silently drops shots and the cup never ends.
+    while (Date.now() < deadline) {
+      if (await trophy.isVisible().catch(() => false)) break
+      await page.mouse.move(195, 700)
+      await page.mouse.down()
+      await page.mouse.move(195, 430)
+      await page.mouse.up()
+      await page.waitForTimeout(500)
+      await page.mouse.move(120, 620)
+      await page.mouse.down()
+      await page.mouse.move(270, 620)
+      await page.mouse.up()
+      await page.waitForTimeout(6000)
+    }
+
+    // The trophy screen itself: the cup is won, and it says so.
+    await expect(trophy).toBeVisible({ timeout: 60_000 })
+    await expect(page.getByText(/coupe est à toi|cup is yours/i)).toBeVisible()
+    await expect(page.getByText(/bonus/i).first()).toBeVisible()
+  })
 })
 
 test.describe('reduced motion', () => {

@@ -137,11 +137,20 @@ export function PlayScreen() {
     return () => window.clearTimeout(id)
   }, [roundOver, screen, earnedStars, addStars, finishRound])
 
-  // Re-arm for the next round. PlayScreen stays mounted across "Again!", so a
-  // mount-only reset would silently stop awarding stars from round two onwards.
+  // Re-arm for the next round. PlayScreen stays mounted across "Again!" and
+  // across every leg of the cup, so a mount-only reset would silently stop
+  // awarding stars from round two onwards.
+  //
+  // This watches `roundOver` and NOT `shotsTaken`. The runner never increments
+  // `shotsTaken` — it ends on a clock — so it sat at 0 for the whole run leg
+  // and stayed 0 going into the next round. The effect therefore never re-ran,
+  // `awarded` stayed true, and the round after a run could never finish: no
+  // stars, no result screen, no trophy. In the Coupe du Royaume the runner is
+  // leg three, so the cup died at the end of leg four, one screen short of the
+  // thing the child had been playing four games for.
   useEffect(() => {
-    if (shotsTaken === 0) awarded.current = false
-  }, [shotsTaken])
+    if (!roundOver) awarded.current = false
+  }, [roundOver])
 
   return (
     <div className="absolute inset-0">

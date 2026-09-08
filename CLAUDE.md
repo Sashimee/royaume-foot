@@ -63,6 +63,13 @@ result screen.
 decides what happens when one ends, and pays a bonus for finishing. `goHome()`
 abandons it, which costs the bonus and keeps the stars the legs already banked.
 
+**`shotsTaken` is not a round counter.** The runner never touches it — it ends on
+a clock — so it reads 0 for that entire leg. Anything re-arming per round must
+watch `roundOver` instead. Getting this wrong is what made the cup die at the end
+of leg four: the guard in `PlayScreen` that stops stars being awarded twice was
+re-armed on `shotsTaken`, which never changed across the run→tower boundary, so
+the last leg could never finish.
+
 The runner ends on a **clock**, not on a count of attempts, which is why
 `gameStore.roundOver` is an explicit flag rather than `shotsTaken >= 5`. Its
 stars are a pool of meshes that get moved and hidden, never mounted per spawn —
@@ -170,6 +177,15 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
 - **Never re-render per frame.** The match loop writes straight to the scene
   graph through refs inside `useFrame`. React state is for discrete events only
   (a shot was judged, the round ended).
+- **Write scene transforms from state, never accumulate them onto the mesh.**
+  `mesh.rotation.z += …` in a frame loop outlives whatever reset the state: the
+  tower blocks kept the tilt they fell with, so a rebuilt tower was stacked out
+  of crooked boxes. The block's tumble is a number in `TowerState` now, and the
+  scene assigns it.
+- **`App.tsx` routes screens with an exhaustive `switch`.** It was a list of
+  `&&`s and it silently lost one — `trophy` was never added, so winning the cup
+  unmounted everything and left a child on a blank page. The `never` in the
+  default case makes that a compile error.
 - **Never drive a three.js property from both JSX and the frame loop.** R3F
   re-applies its declared props on every re-render and will stamp out imperative
   writes. The keeper-mode telegraph ring is hidden by scaling to zero, not by a

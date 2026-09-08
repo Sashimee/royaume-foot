@@ -127,6 +127,43 @@ describe('towers', () => {
     expect(blockAt(settled, 1, TOWER.height - 1).x).toBeGreaterThan(target.x)
   })
 
+  it('tumbles a knocked block as it falls, and stops when it lands', () => {
+    const s = makeTowers()
+    const target = blockAt(s, 1, 0)
+    const hit = collideTowers(s, { x: target.x, y: target.y, z: target.z }, BALL_R)
+
+    const mid = stepTowers(hit, 0.1)
+    expect(Math.abs(blockAt(mid, 1, 3).angle)).toBeGreaterThan(0)
+
+    const settled = settle(mid)
+    const landed = blockAt(settled, 1, 3)
+    const after = stepTowers(settled, 0.1)
+    expect(blockAt(after, 1, 3).angle).toBe(landed.angle)
+  })
+
+  it('stands a rebuilt tower back up square', () => {
+    // The towers are rebuilt once they are all down, so a child with shots left
+    // still has something to aim at. The tumble used to be accumulated straight
+    // onto the mesh and nothing reset it, so the new towers were stacked out of
+    // the tilted blocks left over from the old ones.
+    let s = makeTowers()
+    for (let column = 0; column < TOWER.columns; column += 1) {
+      const target = blockAt(s, column, 0)
+      s = collideTowers(s, { x: target.x, y: target.y, z: target.z }, BALL_R)
+    }
+    const knockedOver = settle(s)
+    expect(towersCleared(knockedOver)).toBe(true)
+    // Worth asserting, or the check below would pass on a state that never tilted.
+    expect(knockedOver.blocks.some((b) => b.angle !== 0)).toBe(true)
+
+    const rebuilt = { ...makeTowers(), knocked: knockedOver.knocked }
+    for (const b of rebuilt.blocks) {
+      expect(b.angle).toBe(0)
+      expect(b.y).toBeCloseTo(restingY(b.row))
+    }
+    expect(rebuilt.knocked).toBe(knockedOver.knocked)
+  })
+
   it('never moves a block that was never hit', () => {
     const s = makeTowers()
     const settled = settle(s)
