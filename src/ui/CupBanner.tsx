@@ -1,7 +1,6 @@
 import { CUP_LEGS } from '../game/cup'
 import { useT } from '../i18n/useLang'
-
-const BADGES: Record<string, string> = { shoot: '🥅', keep: '🧤', run: '⭐', tower: '🧱' }
+import { MODE_BADGES } from './mapPlaces'
 
 /**
  * Where you are in the Coupe du Royaume.
@@ -30,7 +29,7 @@ export function CupBanner({ leg }: { leg: number }) {
               key={mode}
               className={`text-xl ${i === leg ? '' : i < leg ? 'opacity-45 grayscale' : 'opacity-30'}`}
             >
-              {BADGES[mode]}
+              {MODE_BADGES[mode]}
             </span>
           ))}
         </div>

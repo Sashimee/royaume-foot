@@ -81,6 +81,33 @@ age — reacting to a ball already in flight is a reflex test, and this is not
 that. `ballPosAt()` is analytic precisely so the ball lands exactly where the
 ring promised.
 
+## The menu is a map
+
+`ui/KingdomMap.tsx` is the mode picker: the four mini-games as four places on an
+island, with the castle at the top and a dashed road between them. It replaced a
+2×2 grid of buttons that differed only by label and emoji, which gave a child who
+cannot read nothing to remember them by. **It is still one tap from the menu** —
+the map is the picker, not a screen on the way to one, because the plan caps this
+game's menus at two levels and a map you have to open first would be a third.
+
+- **The road is the cup's route.** `PLACES` in `ui/mapPlaces.ts` is ordered by
+  `CUP.legs`, so the dashed line explains the Coupe du Royaume without a word.
+  `mapPlaces.test.ts` fails if the two orders drift apart.
+- **The coordinates are data, and they are tested.** Medallion positions live in
+  `mapPlaces.ts` in the map's own 360×320 space, which the SVG and the buttons
+  share; the tests assert that no two 72px medallions touch, that no two name
+  plates collide, and that everything stays inside the frame. Those collisions
+  happen on a 320px phone, not on the screen you draw them on.
+- **The badges are shared with the cup banner** (`MODE_BADGES`). A child who has
+  seen 🥅🧤⭐🧱 on the cup button has been told which four places it visits, so the
+  two rows must never disagree.
+- Names sit on **opaque** plates: each one lies over a different terrain — grass,
+  sand, snow — so a translucent chip would have a different contrast under each.
+- The art is a plain SVG with `preserveAspectRatio="none"`, and the container
+  holds the viewBox's ratio, so the drawing and the buttons agree at any width.
+  Anything filled up to the coastline eats the inner half of the sand stroke, so
+  the outline is drawn a second time over the regions.
+
 ## Playable characters
 
 `data/roster.ts` holds a **discriminated union**: a `Princess` has hair and a
