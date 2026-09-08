@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BALLS, CHARACTERS, KNIGHTS, PRINCESSES, characterById, nextUnlock } from './roster'
+import { BALLS, CHARACTERS, KNIGHTS, PRINCESSES, characterById, nextUnlock, unlockedBetween } from './roster'
 import { STADIUMS, stadiumById } from './stadiums'
 import { MASCOTS, mascotById } from './mascots'
 import { KEEPERS, keeperById } from './keepers'
@@ -139,5 +139,43 @@ describe('keepers', () => {
         expect(typeof value === 'string' && value.length > 0).toBe(true)
       }
     }
+  })
+
+  describe('unlockedBetween', () => {
+    it('reports what a round just opened up, cheapest first', () => {
+      const opened = unlockedBetween(1, 3)
+      expect(opened.length).toBeGreaterThan(0)
+      for (const item of opened) {
+        expect(item.unlockStars).toBeGreaterThan(1)
+        expect(item.unlockStars).toBeLessThanOrEqual(3)
+      }
+      const thresholds = opened.map((i) => i.unlockStars)
+      expect([...thresholds].sort((a, b) => a - b)).toEqual(thresholds)
+    })
+
+    it('is empty when no threshold was crossed', () => {
+      // The reveal must not fire on a round that earned nothing new, or the
+      // celebration stops meaning anything.
+      expect(unlockedBetween(3, 3)).toEqual([])
+      expect(unlockedBetween(0, 1)).toEqual([])
+    })
+
+    it('never re-reports something already owned', () => {
+      // Every item is claimed exactly once across the whole star range, so a
+      // child cannot be told twice that the same thing arrived.
+      const seen = new Map<string, number>()
+      for (let s = 0; s < 40; s++) {
+        for (const item of unlockedBetween(s, s + 1)) {
+          seen.set(`${item.badge}-${item.unlockStars}`, (seen.get(`${item.badge}-${item.unlockStars}`) ?? 0) + 1)
+        }
+      }
+      for (const count of seen.values()) expect(count).toBe(1)
+    })
+
+    it('never claims the free items, which were never locked', () => {
+      // `before` is the star count the round started from, so it is never
+      // negative and a threshold of 0 can never fall inside the window.
+      expect(unlockedBetween(0, 12).some((i) => i.unlockStars === 0)).toBe(false)
+    })
   })
 })
