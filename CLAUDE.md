@@ -288,8 +288,10 @@ runs the typecheck and the unit tests, so a red rule set cannot become a running
 container. The e2e suite runs in CI instead, because it needs a browser the
 production image deliberately does not carry.
 
-**A push does not deploy.** Dokploy rebuilds when its Deploy button is pressed
-or its webhook fires — merging to `main` on its own changes nothing on the VPS.
+**A push to `main` deploys.** `autoDeploy` is on, so Dokploy's GitHub webhook
+opens a build within seconds of the push; the Deploy button is only needed when
+the webhook stays quiet. This line used to claim the opposite — pushing the
+kingdom-map merge (437c9c5) started a deployment on its own.
 
 ## Git workflow
 
