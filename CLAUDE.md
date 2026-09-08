@@ -143,6 +143,16 @@ face in goal in `shoot` and the only striker in `keep`.
   wide. At twenty-five units away that is all a child can actually tell apart.
 - Every species is modelled facing **+z**, towards the camera. Keeping mode
   turns the whole group round rather than each species knowing which way it plays.
+- **A flat limb must lie in the XY plane**, facing the camera. `keeperRig` beats
+  the side limbs about z, so anything turned to face sideways both vanishes from
+  the front and flaps the wrong way. The dragon's wing membranes were rotated
+  `Math.PI / 2` about y for two releases: they rendered as two thin blades and
+  he read as a green cow holding knives.
+- **Judge a keeper from a screenshot, never from the source.** Every failure
+  here has been a shape that was reasonable in code and wrong on screen — a
+  belly panel a hair smaller than the body sphere sits *inside* it and is simply
+  not there. Look at the wardrobe turntable **and** the view from the penalty
+  spot; a model tuned only close up collapses into a smudge in goal.
 
 ## What a playtest changed
 
@@ -198,8 +208,9 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
 - **Perf budget:** no shadow maps (blob shadows instead), `dpr` capped at 2,
   crowd in one `InstancedMesh`, toon/lambert materials only. Target is a school
   Chromebook at 60 fps. The plan's number is **under 40 draw calls** and the
-  game is **over it** — 140 in `shoot` after instancing the castle's repeated
-  decor, down from 157. The characters and keepers are the cost: dozens of
+  game is **over it** — 149 in `shoot` and 134 in `keep`. It was 140 / 125
+  after instancing the castle's decor (down from 157); the dragon rebuild put
+  nine back, knowingly. The characters and keepers are the cost: dozens of
   primitives each, inside groups that animate, so they cannot be merged without
   redoing the rigs. Measure with `scripts/quality-bench.mjs` before touching it,
   and do not "optimise" this on a machine with no GPU — the benefit is
