@@ -234,10 +234,31 @@ export function ballById(id: string): BallSkin {
   return BALLS.find((b) => b.id === id) ?? BALLS[0]
 }
 
+/** Every unlockable in the game, in one list. */
+function allUnlockables() {
+  return [...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS]
+}
+
+/**
+ * What a round just opened up: everything whose threshold sits above the star
+ * count the child started with and at or below the one they finished with.
+ *
+ * The result screen used to show only what came *next*, so a child who had
+ * just crossed a threshold was told about the one after it and never that
+ * anything had arrived — they had to wander into the wardrobe and notice a
+ * padlock had become a face. Rule 5 makes the wardrobe the reward loop, and a
+ * reward loop with no payoff moment is just a list.
+ */
+export function unlockedBetween(before: number, after: number): { badge: string; unlockStars: number }[] {
+  return allUnlockables()
+    .filter((item) => item.unlockStars > before && item.unlockStars <= after)
+    .sort((a, b) => a.unlockStars - b.unlockStars)
+}
+
 /** Everything the child has not unlocked yet, cheapest first — used for the
  *  "next reward" teaser on the result screen. */
 export function nextUnlock(stars: number): { badge: string; unlockStars: number } | null {
-  const locked = [...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS]
+  const locked = allUnlockables()
     .filter((item) => item.unlockStars > stars)
     .sort((a, b) => a.unlockStars - b.unlockStars)
   return locked[0] ?? null
