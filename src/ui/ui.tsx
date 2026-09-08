@@ -116,10 +116,17 @@ export function PickCard({
   return (
     <button
       type="button"
-      disabled={locked}
       aria-label={locked ? `${name ?? badge} — ${lockedLabel ?? ''}` : name ?? badge}
       aria-pressed={selected}
       onClick={() => {
+        // A locked card is pressable but not selectable. It used to be
+        // `disabled`, so a tap produced no sound, no press and no movement —
+        // and a six-year-old taps everything. Silence there reads as broken,
+        // or as being told off, which is the shape rule 3 exists to forbid.
+        if (locked) {
+          sfx.nudge()
+          return
+        }
         sfx.tap()
         onClick()
       }}
@@ -128,8 +135,16 @@ export function PickCard({
         ${selected ? 'border-yellow-300 bg-white/25' : 'border-white/25 bg-white/10'}`}
     >
       {/* Only the emblem dims when locked. Fading the whole card took the price
-          with it, and an unreadable price is the same as no price. */}
-      <span className={`text-4xl ${locked ? 'opacity-55' : ''}`}>{locked ? '🔒' : badge}</span>
+          with it, and an unreadable price is the same as no price.
+
+          The emblem stays its own badge, dimmed, with the padlock in the
+          corner. Replacing it outright meant three of the four tiles on most
+          tabs were the *same* padlock, and a child cannot want a padlock —
+          there was nothing on those tabs to play towards. */}
+      <span className="relative text-4xl">
+        <span className={locked ? 'opacity-40' : ''}>{badge}</span>
+        {locked && <span className="absolute -right-2 -top-1 text-base">🔒</span>}
+      </span>
       {/* An OPAQUE plate, not a translucent one. The wardrobe's backdrop runs
           from deep violet at the top to pale pink at the bottom, so a
           `bg-black/55` chip that read at 7:1 next to the princesses fell to

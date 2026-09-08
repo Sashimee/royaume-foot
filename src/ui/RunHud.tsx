@@ -22,13 +22,17 @@ export function RunHud({ progress }: { progress: () => number }) {
   }, [progress])
 
   return (
-    <div
-      data-testid="run-timer"
-      className="h-6 w-40 overflow-hidden rounded-full bg-black/30 backdrop-blur-sm"
-      role="img"
-      aria-label="time"
-    >
-      <div ref={fill} className="h-full w-full rounded-full bg-gradient-to-r from-yellow-300 to-pink-400" />
+    // The bar alone read as decoration; the hourglass is what says "this is
+    // running out". Rule 2 applies to what the game tells you, not just to what
+    // you press.
+    <div className="flex items-center gap-2" role="img" aria-label="time">
+      <span className="text-xl">⏳</span>
+      <div
+        data-testid="run-timer"
+        className="h-6 w-36 overflow-hidden rounded-full bg-black/30 backdrop-blur-sm"
+      >
+        <div ref={fill} className="h-full w-full rounded-full bg-gradient-to-r from-yellow-300 to-pink-400" />
+      </div>
     </div>
   )
 }

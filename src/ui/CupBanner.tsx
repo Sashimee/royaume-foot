@@ -15,7 +15,11 @@ export function CupBanner({ leg }: { leg: number }) {
   const t = useT()
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-4">
+    // Above the gesture hint, not on top of it. Sitting at the foot of the
+    // screen this covered the "how do I play this one" chip — inside the Cup,
+    // which is the one place the control changes four times in a sitting and
+    // the hint matters most.
+    <div className="pointer-events-none absolute inset-x-0 bottom-20 flex justify-center pb-4">
       <div className="flex items-center gap-3 rounded-full bg-black/35 px-5 py-2 backdrop-blur-sm">
         <span className="text-lg font-black text-yellow-200">
           🏆 {t('cup.leg')} {leg + 1}/{CUP_LEGS.length}

@@ -104,7 +104,7 @@ function LangRow() {
   const setLang = useLangStore((s) => s.setLang);
 
   return (
-    <div className="mt-2 flex gap-1">
+    <div className="mt-2 flex flex-wrap justify-center gap-2 px-3">
       {LANGS.map((l) => (
         <button
           key={l.code}
