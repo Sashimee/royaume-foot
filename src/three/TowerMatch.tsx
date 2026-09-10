@@ -9,6 +9,7 @@ import type { BallState } from '../game/physics'
 import { collideTowers, makeTowers, stepTowers, towersCleared } from '../game/towerGame'
 import type { TowerState } from '../game/towerGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
 import type { Mascot as MascotData } from '../data/mascots'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
 import { Character } from './Character'
@@ -48,6 +49,7 @@ interface Sim {
 export function TowerMatch({
   api,
   character,
+  accessory,
   ballSkin,
   shadowColour,
   mascot,
@@ -57,6 +59,7 @@ export function TowerMatch({
 }: {
   api: RefObject<TowerHandle | null>
   character: CharacterData
+  accessory: AccessoryData
   ballSkin: BallSkin
   shadowColour: string
   mascot: MascotData
@@ -187,7 +190,7 @@ export function TowerMatch({
   return (
     <group>
       <group scale={1.2}>
-        <Character data={character} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
+        <Character data={character} accessory={accessory} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
       <Mascot data={mascot} home={[1.7, 0, PITCH.ballStart.z - 1.4]} />
 

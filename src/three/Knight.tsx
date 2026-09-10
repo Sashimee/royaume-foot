@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 import type { Knight as KnightData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
+import { replaces } from '../data/accessories'
+import { Accessory } from './Accessory'
 import { useCharacterRig, useRigRefs } from './characterRig'
 import type { CharacterMode } from './characterRig'
 
@@ -13,6 +16,7 @@ import type { CharacterMode } from './characterRig'
  */
 export function Knight({
   data,
+  accessory,
   mode = 'idle',
   showcase = false,
   position = [0, 0, 0],
@@ -20,6 +24,8 @@ export function Knight({
   spinToCelebrate = true,
 }: {
   data: KnightData
+  /** The one worn item. It replaces his plume or his cape, never both. */
+  accessory: AccessoryData
   mode?: CharacterMode
   showcase?: boolean
   position?: [number, number, number]
@@ -54,7 +60,14 @@ export function Knight({
         <meshToonMaterial color={data.armour} />
       </mesh>
 
-      <Cape colour={data.cape} />
+      {/* You cannot wear two capes: a back item takes his. */}
+      {replaces(accessory, 'back') ? (
+        <group position={[0, 1.06, 0]}>
+          <Accessory data={accessory} mount="back" />
+        </group>
+      ) : (
+        <Cape colour={data.cape} />
+      )}
 
       {/* Pauldrons. */}
       {[-1, 1].map((side) => (
@@ -72,7 +85,7 @@ export function Knight({
         <Arm data={data} />
       </group>
 
-      <Head data={data} />
+      <Head data={data} accessory={accessory} />
     </group>
   )
 }
@@ -189,7 +202,7 @@ function Crest({ crest, colour }: { crest: KnightData['crest']; colour: string }
   }
 }
 
-function Head({ data }: { data: KnightData }) {
+function Head({ data, accessory }: { data: KnightData; accessory: AccessoryData }) {
   return (
     <group position={[0, 1.34, 0]}>
       {/* Face — built facing -z, like the princesses. */}
@@ -227,15 +240,23 @@ function Head({ data }: { data: KnightData }) {
         </mesh>
       ))}
 
-      {/* Plume. */}
-      <mesh position={[0, 0.3, 0.03]} rotation={[0.35, 0, 0]}>
-        <capsuleGeometry args={[0.055, 0.22, 4, 8]} />
-        <meshToonMaterial color={data.plume} />
-      </mesh>
-      <mesh position={[0, 0.24, 0.16]} rotation={[0.9, 0, 0]}>
-        <capsuleGeometry args={[0.045, 0.2, 4, 8]} />
-        <meshToonMaterial color={data.plume} />
-      </mesh>
+      {/* Plume — or whatever the child put on his head instead. */}
+      {replaces(accessory, 'head') ? (
+        <group position={[0, 0.3, 0.02]}>
+          <Accessory data={accessory} mount="head" />
+        </group>
+      ) : (
+        <>
+          <mesh position={[0, 0.3, 0.03]} rotation={[0.35, 0, 0]}>
+            <capsuleGeometry args={[0.055, 0.22, 4, 8]} />
+            <meshToonMaterial color={data.plume} />
+          </mesh>
+          <mesh position={[0, 0.24, 0.16]} rotation={[0.9, 0, 0]}>
+            <capsuleGeometry args={[0.045, 0.2, 4, 8]} />
+            <meshToonMaterial color={data.plume} />
+          </mesh>
+        </>
+      )}
     </group>
   )
 }

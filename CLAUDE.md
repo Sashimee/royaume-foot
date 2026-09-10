@@ -17,6 +17,16 @@ node scripts/generate-icons.mjs   # redraw the PWA icons; output is committed
 node scripts/quality-bench.mjs    # contrast, tap targets, draw calls (needs a dev server)
 ```
 
+**Do not edit files while the e2e suite is running.** Vite HMR reloads the page
+and the app remounts on the menu mid-test; the failures look exactly like a real
+regression (a screenshot of the menu where the pitch should be) and vanish on a
+clean re-run.
+
+This sandbox has no system fonts, so Playwright needs the hand-built library
+prefix in `~/.cache/chromium-libs/racine` — `LD_LIBRARY_PATH`, `FONTCONFIG_PATH`
+and `XDG_DATA_DIRS` pointed into it, plus `PLAYWRIGHT_CHROMIUM_PATH`. Without it
+every text assertion fails as "hidden".
+
 ## The audience is the architecture
 
 Every rule below exists because a six-year-old is holding the tablet. Treat them
@@ -150,6 +160,28 @@ rules. It trails the player with a lag rather than sitting at a fixed offset: a
 pet welded to the character reads as a prop, one that catches up reads as alive.
 It clamps itself to `visibleHalfWidthAt(z)`, because following a player who is
 themselves near the edge of frame walks the pet straight out of shot.
+
+## The worn item
+
+`data/accessories.ts` is one slot, not one per body part — every extra slot is
+another decision between a child and the pitch. The item carries its own
+`mount` (`head` or `back`) and `three/Accessory.tsx` draws it; the character
+places the anchor, because a princess and a knight are not the same height.
+
+- **An accessory replaces what the character already wears at that mount** —
+  the princess's crown, the knight's plume, the knight's cape. One rule for
+  both kinds, and nothing is ever added to the `Princess | Knight` union, so a
+  princess still cannot be given a plume.
+- **It is a third section of the 👑 tab, not a sixth tab.** Six tabs across a
+  320 px phone are 41 px each, under rule 4.
+- Cards show **the emoji only**, like the balls: an item name is not a proper
+  noun, and an untranslated string in six locales is worse than no name.
+- Nothing here animates. The body underneath is already moving on the shared
+  rig, and a second loop is one more thing to have to gate behind
+  `reducedMotion`.
+- The same screenshot rule as the keepers applies, and has already earned its
+  keep twice: a dark inner sector on the dragon wing read as a *hole*, and the
+  tiara's star pointed at the goal — away from the camera for the whole game.
 
 ## Keepers
 
@@ -287,6 +319,11 @@ routes `foot.bas.lu` to it. `compose.deploy.yaml` is the stack; the Dockerfile
 runs the typecheck and the unit tests, so a red rule set cannot become a running
 container. The e2e suite runs in CI instead, because it needs a browser the
 production image deliberately does not carry.
+
+Deployment state is readable without the dashboard, from Dokploy's
+`deployment.allByCompose` endpoint on `dok.seil.pro` (composeId
+`1Bz4NZxjO8ytd7FLgLUBE`, API key in `~/.config/dokploy/seil.token`). Its
+`compose.one` endpoint returns the stack's env vars — never print it whole.
 
 **A push to `main` deploys.** `autoDeploy` is on, so Dokploy's GitHub webhook
 opens a build within seconds of the push; the Deploy button is only needed when

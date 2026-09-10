@@ -3,6 +3,7 @@ import { BALLS, CHARACTERS } from '../data/roster'
 import { STADIUMS } from '../data/stadiums'
 import { MASCOTS } from '../data/mascots'
 import { KEEPERS } from '../data/keepers'
+import { ACCESSORIES } from '../data/accessories'
 
 const KEY = 'royaume-foot:save:v1'
 
@@ -14,6 +15,7 @@ export interface SaveState {
   stadiumId: string
   mascotId: string
   keeperId: string
+  accessoryId: string
   muted: boolean
   addStars: (n: number) => void
   setCharacter: (id: string) => void
@@ -21,6 +23,7 @@ export interface SaveState {
   setStadium: (id: string) => void
   setMascot: (id: string) => void
   setKeeper: (id: string) => void
+  setAccessory: (id: string) => void
   toggleMute: () => void
   /** Wipe progress and every choice, back to a first-launch state. */
   reset: () => void
@@ -33,6 +36,7 @@ interface Persisted {
   stadiumId: string
   mascotId: string
   keeperId: string
+  accessoryId: string
   muted: boolean
 }
 
@@ -44,6 +48,7 @@ function load(): Persisted {
     stadiumId: STADIUMS[0].id,
     mascotId: MASCOTS[0].id,
     keeperId: KEEPERS[0].id,
+    accessoryId: ACCESSORIES[0].id,
     muted: false,
   }
   try {
@@ -64,6 +69,9 @@ function load(): Persisted {
       stadiumId: STADIUMS.some((s) => s.id === parsed.stadiumId) ? parsed.stadiumId! : fallback.stadiumId,
       mascotId: MASCOTS.some((m) => m.id === parsed.mascotId) ? parsed.mascotId! : fallback.mascotId,
       keeperId: KEEPERS.some((k) => k.id === parsed.keeperId) ? parsed.keeperId! : fallback.keeperId,
+      accessoryId: ACCESSORIES.some((a) => a.id === parsed.accessoryId)
+        ? parsed.accessoryId!
+        : fallback.accessoryId,
       muted: parsed.muted === true,
     }
   } catch {
@@ -106,6 +114,10 @@ export const useSave = create<SaveState>((set, get) => ({
     set({ keeperId: id })
     save(get)
   },
+  setAccessory: (id) => {
+    set({ accessoryId: id })
+    save(get)
+  },
   reset: () => {
     set({
       stars: 0,
@@ -114,6 +126,7 @@ export const useSave = create<SaveState>((set, get) => ({
       stadiumId: STADIUMS[0].id,
       mascotId: MASCOTS[0].id,
       keeperId: KEEPERS[0].id,
+      accessoryId: ACCESSORIES[0].id,
     })
     save(get)
   },
@@ -124,8 +137,8 @@ export const useSave = create<SaveState>((set, get) => ({
 }))
 
 function save(get: () => SaveState) {
-  const { stars, characterId, ballId, stadiumId, mascotId, keeperId, muted } = get()
-  persist({ stars, characterId, ballId, stadiumId, mascotId, keeperId, muted })
+  const { stars, characterId, ballId, stadiumId, mascotId, keeperId, accessoryId, muted } = get()
+  persist({ stars, characterId, ballId, stadiumId, mascotId, keeperId, accessoryId, muted })
 }
 
 /**

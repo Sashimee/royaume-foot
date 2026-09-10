@@ -3,6 +3,7 @@ import { BALLS, CHARACTERS, KNIGHTS, PRINCESSES, characterById, nextUnlock, unlo
 import { STADIUMS, stadiumById } from './stadiums'
 import { MASCOTS, mascotById } from './mascots'
 import { KEEPERS, keeperById } from './keepers'
+import { ACCESSORIES } from './accessories'
 
 describe('roster', () => {
   it('offers both kinds of character', () => {
@@ -41,7 +42,9 @@ describe('roster', () => {
     // Every kind of unlockable counts, stadiums included — the teaser reads
     // from all of them.
     const highest = Math.max(
-      ...[...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS].map((i) => i.unlockStars),
+      ...[...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS, ...ACCESSORIES].map(
+        (i) => i.unlockStars,
+      ),
     )
     expect(nextUnlock(highest)).toBeNull()
   })
