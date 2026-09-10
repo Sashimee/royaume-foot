@@ -360,13 +360,20 @@ reste la perf sur un vrai appareil**
   supposait « décor = géométries fusionnées » — ce qui n'a jamais été fait.
 
   Deux instanciations sûres (23 créneaux du rempart identiques, 8 fenêtres de
-  tour identiques) ramènent à **140 / 124 / 84 / 72** selon le mode. C'est
+  tour identiques) ont ramené à **140 / 124 / 84 / 72** selon le mode. C'était
   −17 partout, et rien n'a changé à l'écran — vérifié sur les quatre stades.
+
+  **Mesure du 2026-09-10** (`scripts/quality-bench.mjs`) : **149** en tir,
+  **134** en gardienne, **84** en course, **72** en casse-tours — plus 21 au
+  menu et 33 au vestiaire, tous deux dans le budget. Les deux modes qui montrent
+  un gardien de près ont donc repris ce que le dragon refait leur avait coûté,
+  sciemment : la silhouette lisible à vingt-cinq unités valait ces draw calls-là.
+  Les deux autres n'ont pas bougé.
 
   **Le reste n'a pas été fait, et volontairement.** Le gros du compte, ce sont
   les personnages et les gardiens : des dizaines de primitives par corps, dans
   des groupes qui s'animent, donc pas fusionnables sans refondre les rigs. Sur
-  du vrai matériel 140 draw calls ne se voient pas ; sur cette machine il n'y a
+  du vrai matériel 149 draw calls ne se voient pas ; sur cette machine il n'y a
   **pas de GPU** (rastérisation logicielle), donc le gain serait invérifiable.
   Optimiser à l'aveugle un chiffre qu'on ne peut pas mesurer, en touchant ce qui
   casse le plus visiblement, est le meilleur moyen d'introduire une régression
