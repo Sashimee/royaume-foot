@@ -1,7 +1,7 @@
 # 👑⚽ Plan — « Royaume Foot » : jeu 3D princesses + football
 
-Jeu navigateur **100 % frontend**, hébergé sur **GitHub Pages**, pensé pour des
-enfants de **6–7 ans**. Aucun compte, aucun serveur, aucune donnée qui sort de
+Jeu navigateur **100 % frontend**, servi depuis **`https://foot.bas.lu`**
+(Dokploy + Traefik sur le VPS OVH), pensé pour des enfants de **6–7 ans**. Aucun compte, aucun serveur, aucune donnée qui sort de
 l'appareil — même philosophie que le Pic Collage Maker.
 
 **Nom proposé :** *Royaume Foot* (alt. : *Tiara Cup*, *Princess Kick*).
@@ -12,7 +12,7 @@ l'appareil — même philosophie que le Pic Collage Maker.
 
 | Question | Décision | Pourquoi |
 | --- | --- | --- |
-| Où ça vit ? | **Repo dédié `royaume-foot`**, servi sur `https://sashimee.github.io/royaume-foot/` | Historique, CI, issues et cycle de release propres au jeu. *(Une première version a vécu dans `Pic-collage/game/` ; déplacée ici sur demande.)* |
+| Où ça vit ? | **Repo dédié `royaume-foot`**, servi sur `https://foot.bas.lu` | Historique, CI, issues et cycle de release propres au jeu. *(Deux étapes depuis : une première version a vécu dans `Pic-collage/game/`, puis sur GitHub Pages sous `/royaume-foot/`. Le jeu a un domaine à lui, donc `base` est `/`.)* |
 | Framework 3D | **three.js 0.185** + **@react-three/fiber 9.6** (drei retiré : inutilisé) | R3F 9 est compatible React 19 (peer `react >=19 <19.3`, on est en 19.2). On garde React/TS/Vite/Tailwind/zustand déjà maîtrisés — pas de 2ᵉ stack à apprendre. |
 | Physique | **Maison, arcade** (sphère vs plan/AABB, gravité + rebond + friction) | Rapier = ~1 Mo de WASM pour un besoin trivial. Un ballon arcade « qui pardonne » est *meilleur* pour des enfants qu'une simu réaliste. Rapier reste l'option B si on veut casser des tours de cubes (phase 4). |
 | Assets 3D | **Zéro fichier .glb au départ** : princesses construites en primitives (cône = robe, sphère = tête, capsule = bras) en low-poly kawaii | Chargement instantané, aucun pipeline d'asset, style cohérent, palette 100 % paramétrable → la customisation devient gratuite. glTF possible plus tard sans changer l'archi. |
@@ -21,7 +21,8 @@ l'appareil — même philosophie que le Pic Collage Maker.
 
 > **Note :** la première implémentation vivait en sous-app dans le repo
 > `Pic-collage` (`game/`, servi sur `/Pic-collage/game/`). Elle a été extraite
-> ici : `base` passe de `/Pic-collage/game/` à `/royaume-foot/`, le build n'a
+> ici : `base` passe de `/Pic-collage/game/` à `/royaume-foot/`, puis à `/` le
+> jour où le jeu a eu son propre domaine ; le build n'a
 > plus besoin de `emptyOutDir: false`, et le contournement du service worker du
 > collage (`navigateFallbackDenylist`) devient inutile — deux origines de
 > chemins distinctes ne peuvent plus se marcher dessus.
@@ -68,7 +69,8 @@ de rejouer, pas le score.
 
 - **6 princesses** : couleurs de peau, cheveux et robes variés (représentation
   inclusive dès le départ).
-- **Robes / capes / couronnes / chaussures à paillettes.**
+- **Une tenue** : un seul objet porté à la fois — ailes, capes, couronnes —
+  posé sur n'importe quel personnage.
 - **Ballons** : classique, licorne, arc-en-ciel, étoile, ballon-gâteau.
 - **Stades** : prairie, château, plage, royaume des glaces, nuit étoilée.
 - **Mascotte** qui court sur le terrain : chat, licorne, dragon bébé.
@@ -78,9 +80,9 @@ de rejouer, pas le score.
 ## 3. Architecture technique
 
 ```
-game/
-├── index.html                # entrée séparée
-├── vite.config.ts            # base '/Pic-collage/game/', outDir '../dist/game', emptyOutDir:false
+royaume-foot/
+├── index.html
+├── vite.config.ts            # base '/', PWA (vite-plugin-pwa)
 └── src/
     ├── main.tsx
     ├── App.tsx               # routeur d'écrans maison (pas de react-router)
@@ -92,10 +94,11 @@ game/
     │   ├── aim.ts            # pointer → vecteur de tir (pure, testable)
     │   ├── scoring.ts        # buts, cibles, étoiles (pure, testable)
     │   └── keeper.ts         # IA gardien : lente, ratée exprès, difficulté douce
+    ├── data/                 # roster, stades, mascottes, gardiens, tenue
     ├── three/
     │   ├── Scene.tsx         # <Canvas>, lumières, dpr, caméra
     │   ├── Pitch.tsx         # terrain, but, filet, décor du stade
-    │   ├── Princess.tsx      # avatar procédural paramétré par la tenue
+    │   ├── Character.tsx     # avatar procédural (princesse ou chevalier)
     │   ├── Ball.tsx          # ballon + traînée de paillettes
     │   ├── Crowd.tsx         # foule instanciée (InstancedMesh, 1 draw call)
     │   └── fx/               # confettis 3D, étincelles, « BUT ! » qui rebondit
@@ -190,7 +193,9 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   vestiaire reste visible sans défiler sur un 390 × 844 (le personnage du menu
   est passé de 160 à 128 px de haut, le bouton de la coupe en version compacte),
   mais la rangée des langues est désormais sous la ligne de flottaison, avec
-  l'affordance de défilement pour le dire.
+  l'affordance de défilement pour le dire. **Tranché au test du 2026-09-10** :
+  l'enfant fait défiler le menu d'elle-même, sans qu'on le lui montre. La carte
+  garde ses ~320 px et la mise en page ne bouge pas.
 
 > **Écart :** un seul des deux mini-jeux prévus. Livrer le second à moitié aurait
 > coûté la qualité du premier ; la trajectoire du ballon en mode gardienne est
@@ -313,7 +318,8 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   `sw.js` est explicitement non-caché par nginx — un service worker gardé fige un
   enfant sur la version qu'il a installée et plus aucun déploiement ne l'atteint.
 
-**Phase 5 — Qualité — 🟡 l'accessibilité est faite, le reste attend un enfant**
+**Phase 5 — Qualité — 🟡 l'accessibilité est faite, le terrain a validé ;
+reste la perf sur un vrai appareil**
 
 - ✅ **Contrastes, mesurés et non calculés.** `scripts/quality-bench.mjs` relit
   les **pixels rendus** (la capture est redessinée dans un canvas de la page),
@@ -368,47 +374,93 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
 
 - ⬜ **Passe perf sur mobile réel.** Impossible ici, pour la raison ci-dessus.
 
-- ⬜ **Test avec un enfant de l'âge cible.** *Personne d'autre ne peut le faire.*
+- ✅ **Test avec un enfant de l'âge cible.** *(fait, 2026-09-10)* Deuxième
+  session, cette fois après les quatre gardiens, Casse-tours, la coupe et la
+  carte. Les quatre hypothèses que le plan avait posées tiennent :
+  - **Casse-tours se joue sans explication.** Le pari était que le geste du tir
+    se transfère tel quel ; il se transfère, du premier coup et sans aide.
+    C'était le seul mini-jeu que personne n'avait jamais essayé.
+  - **La coupe va au bout.** Les quatre épreuves d'affilée jusqu'au trophée :
+    la longueur n'est pas un problème à six ans, `CUP.legs` reste à quatre.
+  - **La carte est un vrai sélecteur.** Elle est allée droit au jeu qu'elle
+    voulait, sans qu'on lui lise les noms — c'est précisément ce que la carte
+    achète, et c'est ce qui justifie sa place à l'écran.
+  - **L'affordance de défilement suffit.** Elle fait défiler le menu seule ; le
+    dégradé et la flèche se voient. Aucune des retouches envisagées (rétrécir
+    le titre, supprimer « On joue à quoi ? ») n'est nécessaire.
 
-> **C'est ce qui manque le plus.** Les phases 3ter et 4 ont ajouté quatre
-> gardiens, un mini-jeu et une coupe sur un équilibrage validé par **une seule**
-> session. La question que le plan se posait déjà — « qu'est-ce qui a été
-> difficile ou pas compris ? » — vaut plus que n'importe quelle fonctionnalité
-> restante, et elle vaut maintenant pour cinq façons de jouer au lieu de trois.
->
-> **Ce qu'il faut regarder, dans l'ordre :**
-> 1. **Casse-tours** est le seul mini-jeu que personne n'a jamais essayé. Le
->    geste est celui du tir, donc il ne devrait rien y avoir à expliquer — c'est
->    précisément l'hypothèse à vérifier.
-> 2. **La coupe va-t-elle au bout ?** Quatre épreuves d'affilée, c'est long à
->    6 ans. Si elle décroche, à quelle épreuve ?
-> 3. **Les gardiens se distinguent-ils ?** Ils sont à vingt-cinq unités. Le
->    pari est que la silhouette suffit. Demander « c'est qui, dans les buts ? »
->    sans montrer le vestiaire.
-> 4. **L'onglet 🧤 se trouve-t-il tout seul ?** Il y a cinq onglets maintenant.
-> 5. Et toujours : **où est-ce qu'elle a bloqué ?** « Ça marche » est un bon
->    signal, « voilà où elle a bloqué » en est un meilleur.
+  **Ce qui n'a pas été observé cette fois**, à reprendre au prochain test :
+  reconnaît-elle les **gardiens** à vingt-cinq unités (« c'est qui, dans les
+  buts ? »), trouve-t-elle **l'onglet 🧤** maintenant qu'il y en a cinq, et
+  toujours la question qui vaut le plus — **où a-t-elle bloqué ?**
+
+> **Le seul point encore ouvert de la phase 5 est la passe perf sur un vrai
+> appareil**, et c'est aussi le seul que cette machine ne peut pas trancher.
+> L'équilibrage, lui, n'attend plus rien : il a maintenant deux sessions
+> réelles derrière lui, dont une qui couvrait les cinq façons de jouer.
+
+**Phase 6 — La tenue — ✅ fait**
+
+Le plan promettait « robes / capes / couronnes / chaussures à paillettes » et
+rien n'avait été livré : la couronne et la cape étaient des *couleurs* sur
+l'entrée du roster, pas des objets qu'on choisit. `data/accessories.ts` et
+`three/Accessory.tsx` comblent le trou — huit objets, plus la case vide.
+
+- **Un seul emplacement, pas un par partie du corps.** Chaque emplacement de
+  plus est une décision de plus entre l'enfant et le terrain. L'objet porte
+  donc son propre `mount` (`head` ou `back`) et le personnage le lit.
+- **L'objet *remplace* ce que le personnage porte déjà à cet endroit** : la
+  couronne de la princesse, le plumet du chevalier, sa cape. Une règle, deux
+  types de personnage, et surtout **rien n'est ajouté à l'union discriminée** —
+  une princesse ne peut toujours pas recevoir de plumet.
+- **Pas un sixième onglet.** Six onglets sur un téléphone de 320 px font 41 px
+  chacun, sous la règle des 64 px, et personne n'a encore vérifié qu'un enfant
+  trouve le cinquième. C'est une troisième section de l'onglet 👑, là où se
+  trouve déjà celui qui va le porter.
+- **La carte ne montre qu'un emoji**, comme les ballons : le nom d'un objet
+  n'est pas un nom propre, et une chaîne non traduite dans six langues est pire
+  que pas de nom du tout.
+- **Les paliers vont jusqu'à 31 étoiles**, au-delà de l'ancien sommet du jeu
+  (22, le ballon-gâteau) : un enfant qui a tout débloqué n'a plus rien à aller
+  chercher, et la règle 5 fait du vestiaire la boucle de récompense.
+
+Chaque forme a été **jugée sur une capture, pas sur le code**, depuis les deux
+vues qui comptent — le tourne-disque du vestiaire et le point de penalty. La
+première version était illisible : tous les objets de tête étaient trop petits
+pour se distinguer de la couronne d'origine, et les ailes de dragon
+disparaissaient derrière le torse. Deux erreurs n'auraient pas pu être vues
+autrement : le secteur sombre au milieu de l'aile de dragon se lisait comme un
+*trou*, et l'étoile du diadème pointait vers le but — c'est-à-dire à l'opposé
+de la caméra pendant toute la partie.
+
+*Coût :* de **0 à +8 draw calls** selon l'objet, mesuré. Les ailes coûtent 8 ;
+le diadème et le chapeau coûtent **zéro**, parce qu'ils remplacent la couronne
+qu'ils occupent.
 
 ---
 
 ## 5. CI / déploiement
 
-Un seul job Pages, deux builds :
+**Dokploy sur `dok.seil.pro`** construit l'image depuis ce dépôt et **Traefik**
+route `foot.bas.lu` vers elle. `compose.deploy.yaml` décrit la stack ; le
+Dockerfile lance le typecheck **et les tests unitaires**, donc un jeu de règles
+rouge ne peut pas devenir un conteneur qui tourne. La suite e2e tourne en CI et
+pas là : elle a besoin d'un navigateur que l'image de production ne transporte
+volontairement pas.
 
-```yaml
-- run: npm run build        # app collage  → dist/
-- run: npm run build:game   # jeu          → dist/game/  (emptyOutDir: false)
-- uses: actions/upload-pages-artifact@v3
-  with: { path: ./dist }
-```
+**Un push sur `main` déclenche un déploiement.** `autoDeploy` est actif, le
+webhook GitHub de Dokploy ouvre un build dans les secondes qui suivent ; le
+bouton Deploy ne sert que si le webhook reste muet. Ne pas faire les deux : on
+empile un second build sur le premier.
 
-`build:game` = `vite build -c game/vite.config.ts`. Le `tsc -b` global couvre le
-sous-projet via une référence dans `tsconfig.json`. Rien à changer pour l'app
-collage ; en cas de souci sur le jeu, on retire une ligne du workflow.
+**`sw.js` ne doit jamais être mis en cache** — `nginx.conf` le dit
+explicitement. Un service worker gardé fige un enfant sur la version qu'il a
+installée, et plus aucun déploiement ne l'atteint.
 
-**Attention** : le service worker de l'app collage a pour scope `/Pic-collage/`
-et englobe donc `/game/`. On exclut explicitement `game/` de ses `globPatterns`
-avant d'ajouter le SW du jeu (phase 4), sinon les deux se marchent dessus.
+> *Historique :* le jeu a d'abord été publié par un job GitHub Pages à deux
+> builds, aux côtés de l'app collage, dont le service worker avait pour scope
+> `/Pic-collage/` et englobait `/game/`. Deux origines distinctes puis un
+> domaine dédié ont supprimé le problème et le workflow avec.
 
 ---
 
@@ -427,9 +479,11 @@ avant d'ajouter le SW du jeu (phase 4), sinon les deux se marchent dessus.
 ## 7. Dépendances ajoutées (jeu uniquement)
 
 ```
-three@^0.185          @react-three/fiber@^9.6      @react-three/drei@^10.7
-@types/three (dev)
+three@^0.185          @react-three/fiber@^9.6      @types/three (dev)
 ```
+
+`@react-three/drei` figurait ici au départ et a été **retiré** : aucune de ses
+aides n'a servi.
 
 Réutilisées depuis la racine : react 19, zustand, tailwind v4, vite-plugin-pwa,
 canvas-confetti, vitest, playwright. **Aucun appel réseau**, conformément aux
