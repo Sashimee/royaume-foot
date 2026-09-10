@@ -6,6 +6,7 @@ import { RUN } from '../game/constants'
 import { makeRun, runIsOver, stepRun } from '../game/runGame'
 import type { RunState } from '../game/runGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
 import type { Mascot as MascotData } from '../data/mascots'
 import { Ball, BlobShadow } from './Ball'
 import { Character } from './Character'
@@ -33,6 +34,7 @@ const POOL = 24
 export function RunMatch({
   api,
   character,
+  accessory,
   ballSkin,
   shadowColour,
   mascot,
@@ -43,6 +45,7 @@ export function RunMatch({
 }: {
   api: RefObject<RunHandle | null>
   character: CharacterData
+  accessory: AccessoryData
   ballSkin: BallSkin
   shadowColour: string
   mascot: MascotData
@@ -142,6 +145,7 @@ export function RunMatch({
       <group ref={playerRef} position={[0, 0, RUN.playerZ]}>
         <group scale={1.2}>
           <Character
+            accessory={accessory}
             data={character}
             mode={celebrating ? 'celebrate' : 'idle'}
             facing={0}

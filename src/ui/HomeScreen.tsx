@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { useGame } from "../store/gameStore";
 import { useSave } from "../store/saveStore";
 import { characterById } from "../data/roster";
+import { accessoryById } from "../data/accessories";
 import { useT, useLangStore } from "../i18n/useLang";
 import { LANGS } from "../i18n/translations";
 import { Character } from "../three/Character";
@@ -19,6 +20,7 @@ export function HomeScreen() {
   const goWardrobe = useGame((s) => s.goWardrobe);
   const startCup = useGame((s) => s.startCup);
   const character = useSave((s) => characterById(s.characterId));
+  const accessory = useSave((s) => accessoryById(s.accessoryId));
   const stars = useSave((s) => s.stars);
   const muted = useSave((s) => s.muted);
   const toggleMute = useSave((s) => s.toggleMute);
@@ -57,7 +59,7 @@ export function HomeScreen() {
         >
           <hemisphereLight args={["#ffe9f6", "#7a4a9a", 1.2]} />
           <directionalLight position={[3, 6, 5]} intensity={1.1} />
-          <Character data={character} showcase position={[0, -0.9, 0]} />
+          <Character data={character} accessory={accessory} showcase position={[0, -0.9, 0]} />
         </Canvas>
       </div>
 

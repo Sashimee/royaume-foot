@@ -11,6 +11,7 @@ import { ballById, characterById } from '../data/roster'
 import { stadiumById } from '../data/stadiums'
 import { mascotById } from '../data/mascots'
 import { keeperById } from '../data/keepers'
+import { accessoryById } from '../data/accessories'
 import { useT } from '../i18n/useLang'
 import { Scene } from '../three/Scene'
 import { Pitch } from '../three/Pitch'
@@ -44,6 +45,7 @@ export function PlayScreen() {
   const stadium = useSave((s) => stadiumById(s.stadiumId))
   const mascot = useSave((s) => mascotById(s.mascotId))
   const keeper = useSave((s) => keeperById(s.keeperId))
+  const accessory = useSave((s) => accessoryById(s.accessoryId))
   const addStars = useSave((s) => s.addStars)
 
   const screen = useGame((s) => s.screen)
@@ -162,6 +164,7 @@ export function PlayScreen() {
           <Match
             api={api}
             character={character}
+            accessory={accessory}
             keeper={keeper}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
@@ -174,6 +177,7 @@ export function PlayScreen() {
           <KeepMatch
             api={keepApi}
             character={character}
+            accessory={accessory}
             shooter={keeper}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
@@ -186,6 +190,7 @@ export function PlayScreen() {
           <TowerMatch
             api={towerApi}
             character={character}
+            accessory={accessory}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
             mascot={mascot}
@@ -197,6 +202,7 @@ export function PlayScreen() {
           <RunMatch
             api={runApi}
             character={character}
+            accessory={accessory}
             ballSkin={ballSkin}
             shadowColour={stadium.shadow}
             mascot={mascot}

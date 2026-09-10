@@ -211,6 +211,42 @@ test.describe('wardrobe', () => {
     await expect(page.getByTestId('scroll-more')).toBeVisible()
   })
 
+  test('keeps the worn item with the character wearing it, and remembers it', async ({ page }) => {
+    await page.goto('./')
+    await page.getByRole('button', { name: DRESS }).first().click()
+
+    // The worn item is a third section of the characters tab, not a sixth tab:
+    // six tabs across a 320 px phone are 41 px each, under the 64 px rule.
+    await expect(
+      page.getByRole('heading', { name: /Ma tenue|My outfit|Mein Outfit|Mi conjunto|Il mio vestito|O meu conjunto/i }),
+    ).toBeVisible()
+    await expect(page.getByRole('tab')).toHaveCount(5)
+
+    // At zero stars everything but the empty slot is locked, and a locked card
+    // stays unselected however hard a six-year-old presses it.
+    const wings = page.getByRole('button', { name: /🧚/ })
+    await wings.click()
+    await expect(wings).toHaveAttribute('aria-pressed', 'false')
+
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('royaume-foot:save:v1')
+      localStorage.setItem(
+        'royaume-foot:save:v1',
+        JSON.stringify({ ...(raw ? JSON.parse(raw) : {}), stars: 99 }),
+      )
+    })
+    await page.reload()
+    await page.getByRole('button', { name: DRESS }).first().click()
+
+    const unlockedWings = page.getByRole('button', { name: /🧚/ })
+    await unlockedWings.click()
+    await expect(unlockedWings).toHaveAttribute('aria-pressed', 'true')
+
+    await page.reload()
+    await page.getByRole('button', { name: DRESS }).first().click()
+    await expect(page.getByRole('button', { name: /🧚/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
   test('puts the keepers behind their own tab', async ({ page }) => {
     await page.goto('./')
     await page.getByRole('button', { name: DRESS }).first().click()

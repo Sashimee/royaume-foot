@@ -1,6 +1,7 @@
 import { Knight } from './Knight'
 import { Princess } from './Princess'
 import type { Character as CharacterData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
 import type { CharacterMode } from './characterRig'
 
 /**
@@ -12,6 +13,7 @@ import type { CharacterMode } from './characterRig'
  */
 export function Character(props: {
   data: CharacterData
+  accessory: AccessoryData
   mode?: CharacterMode
   showcase?: boolean
   position?: [number, number, number]

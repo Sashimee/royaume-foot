@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 import type { Princess as PrincessData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
+import { replaces } from '../data/accessories'
+import { Accessory } from './Accessory'
 import { useCharacterRig, useRigRefs } from './characterRig'
 import type { CharacterMode } from './characterRig'
 
@@ -14,6 +17,7 @@ import type { CharacterMode } from './characterRig'
  */
 export function Princess({
   data,
+  accessory,
   mode = 'idle',
   showcase = false,
   position = [0, 0, 0],
@@ -21,6 +25,8 @@ export function Princess({
   spinToCelebrate = true,
 }: {
   data: PrincessData
+  /** The one worn item. It replaces her crown when it is a head piece. */
+  accessory: AccessoryData
   mode?: CharacterMode
   /** Wardrobe/menu presentation: face the camera and turn slowly on the spot. */
   showcase?: boolean
@@ -64,7 +70,13 @@ export function Princess({
         <Arm skin={data.skin} />
       </group>
 
-      <Head data={data} />
+      {/* Between the shoulder blades. She wears nothing here of her own, so a
+          back item never has to replace anything. */}
+      <group position={[0, 1.2, 0]}>
+        <Accessory data={accessory} mount="back" />
+      </group>
+
+      <Head data={data} accessory={accessory} />
     </group>
   )
 }
@@ -94,7 +106,7 @@ function Arm({ skin }: { skin: string }) {
   )
 }
 
-function Head({ data }: { data: PrincessData }) {
+function Head({ data, accessory }: { data: PrincessData; accessory: AccessoryData }) {
   return (
     <group position={[0, 1.62, 0]}>
       <mesh>
@@ -117,7 +129,13 @@ function Head({ data }: { data: PrincessData }) {
       ))}
 
       <Hair data={data} />
-      <CrownHat color={data.crown} />
+      {replaces(accessory, 'head') ? (
+        <group position={[0, 0.26, 0.02]}>
+          <Accessory data={accessory} mount="head" />
+        </group>
+      ) : (
+        <CrownHat color={data.crown} />
+      )}
     </group>
   )
 }

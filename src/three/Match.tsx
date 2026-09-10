@@ -11,6 +11,7 @@ import type { KeeperState } from '../game/keeper'
 import { evaluateCrossing } from '../game/scoring'
 import type { ShotOutcome } from '../game/scoring'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
 import type { Mascot as MascotData } from '../data/mascots'
 import type { Keeper as KeeperData } from '../data/keepers'
 import { Ball, BallTrail, BlobShadow, TRAIL_LENGTH } from './Ball'
@@ -53,6 +54,7 @@ interface Sim {
 export function Match({
   api,
   character,
+  accessory,
   keeper,
   ballSkin,
   shadowColour,
@@ -63,6 +65,7 @@ export function Match({
 }: {
   api: RefObject<MatchHandle | null>
   character: CharacterData
+  accessory: AccessoryData
   keeper: KeeperData
   ballSkin: BallSkin
   shadowColour: string
@@ -232,7 +235,7 @@ export function Match({
   return (
     <group>
       <group scale={1.2}>
-        <Character data={character} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
+        <Character data={character} accessory={accessory} mode={charMode} position={[-1.05, 0, PITCH.ballStart.z + 0.8]} />
       </group>
       <KeeperCheerContext value={keeperCheer}>
         <Keeper data={keeper} ref={keeperRef} />

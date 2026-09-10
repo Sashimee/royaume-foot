@@ -6,6 +6,7 @@ import { KEEP, PITCH } from '../game/constants'
 import type { Attempt } from '../game/keeperGame'
 import { ballPosAt, isSave, makeAttempt, seededRandom, stepPlayerKeeper } from '../game/keeperGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
+import type { Accessory as AccessoryData } from '../data/accessories'
 import type { Mascot as MascotData } from '../data/mascots'
 import type { Keeper as KeeperData } from '../data/keepers'
 import { Ball, BlobShadow } from './Ball'
@@ -40,6 +41,7 @@ interface Sim {
 export function KeepMatch({
   api,
   character,
+  accessory,
   shooter,
   ballSkin,
   shadowColour,
@@ -50,6 +52,7 @@ export function KeepMatch({
 }: {
   api: RefObject<KeepHandle | null>
   character: CharacterData
+  accessory: AccessoryData
   /** The chosen keeper, who takes the shots in this mode. */
   shooter: KeeperData
   ballSkin: BallSkin
@@ -178,7 +181,7 @@ export function KeepMatch({
           also towards the camera — so the child sees her face, not her back. */}
       <group ref={playerRef} position={[0, 0, PITCH.goalZ + 0.7]}>
         <group scale={1.2}>
-          <Character data={character} mode={charMode} facing={Math.PI} spinToCelebrate={false} />
+          <Character data={character} accessory={accessory} mode={charMode} facing={Math.PI} spinToCelebrate={false} />
         </group>
       </group>
 

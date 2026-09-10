@@ -1,6 +1,7 @@
 import { STADIUMS } from './stadiums'
 import { MASCOTS } from './mascots'
 import { KEEPERS } from './keepers'
+import { ACCESSORIES } from './accessories'
 
 /**
  * The wardrobe catalogue.
@@ -236,7 +237,7 @@ export function ballById(id: string): BallSkin {
 
 /** Every unlockable in the game, in one list. */
 function allUnlockables() {
-  return [...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS]
+  return [...CHARACTERS, ...BALLS, ...STADIUMS, ...MASCOTS, ...KEEPERS, ...ACCESSORIES]
 }
 
 /**

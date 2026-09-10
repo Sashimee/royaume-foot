@@ -7,6 +7,7 @@ import { BALLS, KNIGHTS, PRINCESSES, characterById } from '../data/roster'
 import { STADIUMS } from '../data/stadiums'
 import { MASCOTS, mascotById } from '../data/mascots'
 import { KEEPERS, keeperById } from '../data/keepers'
+import { ACCESSORIES, accessoryById } from '../data/accessories'
 import { useT } from '../i18n/useLang'
 import type { TranslationKey } from '../i18n/translations'
 import { Character } from '../three/Character'
@@ -48,11 +49,13 @@ export function WardrobeScreen() {
   const stadiumId = useSave((s) => s.stadiumId)
   const mascotId = useSave((s) => s.mascotId)
   const keeperId = useSave((s) => s.keeperId)
+  const accessoryId = useSave((s) => s.accessoryId)
   const setCharacter = useSave((s) => s.setCharacter)
   const setBall = useSave((s) => s.setBall)
   const setStadium = useSave((s) => s.setStadium)
   const setMascot = useSave((s) => s.setMascot)
   const setKeeper = useSave((s) => s.setKeeper)
+  const setAccessory = useSave((s) => s.setAccessory)
 
   return (
     <div className="absolute inset-0 flex flex-col" style={{ background: SKY }}>
@@ -78,7 +81,12 @@ export function WardrobeScreen() {
             </group>
           ) : (
             <>
-              <Character data={characterById(characterId)} showcase position={[0, -0.95, 0]} />
+              <Character
+                data={characterById(characterId)}
+                accessory={accessoryById(accessoryId)}
+                showcase
+                position={[0, -0.95, 0]}
+              />
               <Mascot data={mascotById(mascotId)} home={[0.95, -0.95, 0.45]} />
             </>
           )}
@@ -115,6 +123,22 @@ export function WardrobeScreen() {
                   locked={!isUnlocked(k.unlockStars, stars)}
                   lockedLabel={`⭐${k.unlockStars}`}
                   onClick={() => setCharacter(k.id)}
+                />
+              ))}
+            </Section>
+            {/* One worn item, and it lives with the characters rather than
+                behind a sixth tab: six tabs across a 320 px phone are 41 px
+                each, well under the 64 px rule, and what you wear belongs
+                next to who is wearing it. */}
+            <Section title={`✨ ${t('wardrobe.accessories')}`}>
+              {ACCESSORIES.map((a) => (
+                <PickCard
+                  key={a.id}
+                  badge={a.badge}
+                  selected={a.id === accessoryId}
+                  locked={!isUnlocked(a.unlockStars, stars)}
+                  lockedLabel={`⭐${a.unlockStars}`}
+                  onClick={() => setAccessory(a.id)}
                 />
               ))}
             </Section>
