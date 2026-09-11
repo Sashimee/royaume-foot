@@ -90,3 +90,68 @@ export function seededRandom(seed: number): () => number {
 function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n))
 }
+
+/**
+ * The wind-up → flight → settle cycle one attempt goes through.
+ *
+ * This lives here rather than in the scene because it is what decides when the
+ * shot is judged, and because the bug below is invisible in the source and
+ * obvious in a test.
+ */
+export type KeepPhase = 'windup' | 'flight' | 'settle'
+
+export interface AttemptClock {
+  phase: KeepPhase
+  /** Seconds spent in the current phase. */
+  t: number
+  /**
+   * Seconds since the kick, which keeps running through `settle` — unlike the
+   * phase timer, which resets at every transition. Driving the ball from the
+   * phase timer teleported it back to the shooter's feet the instant the shot
+   * was judged and flew the whole shot a second time, underneath a verdict the
+   * child had already been given.
+   */
+  sinceKick: number
+}
+
+/** What the clock just did, for the scene to react to. */
+export type AttemptEvent = 'kick' | 'judged' | 'rearm' | null
+
+export function makeAttemptClock(): AttemptClock {
+  return { phase: 'windup', t: 0, sinceKick: 0 }
+}
+
+/**
+ * Advances the clock by `dt`. `held` freezes the wind-up, so no new shot is
+ * ever taken behind a result panel.
+ */
+export function stepAttemptClock(
+  clock: AttemptClock,
+  dt: number,
+  held: boolean,
+): { clock: AttemptClock; event: AttemptEvent } {
+  const t = clock.t + dt
+  const sinceKick = clock.phase === 'windup' ? 0 : clock.sinceKick + dt
+
+  if (clock.phase === 'windup' && t >= KEEP.windUp && !held) {
+    return { clock: { phase: 'flight', t: 0, sinceKick: 0 }, event: 'kick' }
+  }
+  if (clock.phase === 'flight' && t >= KEEP.flightTime) {
+    return { clock: { phase: 'settle', t: 0, sinceKick }, event: 'judged' }
+  }
+  if (clock.phase === 'settle' && t >= KEEP.settle) {
+    return { clock: makeAttemptClock(), event: 'rearm' }
+  }
+  return { clock: { phase: clock.phase, t, sinceKick }, event: null }
+}
+
+/**
+ * How far into its flight the ball should be drawn, in seconds.
+ *
+ * It carries on past the goal line rather than stopping on it, so the ball is
+ * visibly in the net, and then holds there for the rest of the settle.
+ */
+export function ballFlightTime(clock: AttemptClock): number {
+  if (clock.phase === 'windup') return 0
+  return Math.min(clock.sinceKick, KEEP.flightTime * KEEP.followThrough)
+}

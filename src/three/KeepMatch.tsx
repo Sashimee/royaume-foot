@@ -3,8 +3,17 @@ import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { KEEP, PITCH } from '../game/constants'
-import type { Attempt } from '../game/keeperGame'
-import { ballPosAt, isSave, makeAttempt, seededRandom, stepPlayerKeeper } from '../game/keeperGame'
+import type { Attempt, AttemptClock } from '../game/keeperGame'
+import {
+  ballFlightTime,
+  ballPosAt,
+  isSave,
+  makeAttempt,
+  makeAttemptClock,
+  seededRandom,
+  stepAttemptClock,
+  stepPlayerKeeper,
+} from '../game/keeperGame'
 import type { BallSkin, Character as CharacterData } from '../data/roster'
 import type { Accessory as AccessoryData } from '../data/accessories'
 import type { Mascot as MascotData } from '../data/mascots'
@@ -20,12 +29,9 @@ export interface KeepHandle {
   aimAt: (x: number) => void
 }
 
-type Phase = 'windup' | 'flight' | 'settle'
-
 interface Sim {
   attempt: Attempt
-  phase: Phase
-  t: number
+  clock: AttemptClock
   /** Where the child is pointing. */
   wantedX: number
   keeperX: number
@@ -72,8 +78,7 @@ export function KeepMatch({
   const rand = useMemo(() => seededRandom(Date.now() & 0xffff), [])
   const sim = useRef<Sim>({
     attempt: makeAttempt(rand),
-    phase: 'windup',
-    t: 0,
+    clock: makeAttemptClock(),
     wantedX: 0,
     keeperX: 0,
   })
@@ -103,26 +108,20 @@ export function KeepMatch({
     // device run in slow motion rather than drop frames.
     const dt = Math.min(rawDt, 0.25)
     const s = sim.current
-    s.t += dt
 
     // She follows the finger in every phase — including while the ball flies,
     // so a late reaction is still worth attempting.
     s.keeperX = stepPlayerKeeper(s.keeperX, s.wantedX, dt)
 
-    if (s.phase === 'windup' && s.t >= KEEP.windUp && !frozenRef.current) {
-      s.phase = 'flight'
-      s.t = 0
-    } else if (s.phase === 'flight' && s.t >= KEEP.flightTime) {
+    const step = stepAttemptClock(s.clock, dt, frozenRef.current)
+    s.clock = step.clock
+    if (step.event === 'judged') {
       const saved = isSave(s.attempt, s.keeperX)
-      s.phase = 'settle'
-      s.t = 0
       setCharacterMode(saved ? 'celebrate' : 'idle')
       if (saved) cheerUntil.current = now.current + 2.2
       resultCallback.current(saved)
-    } else if (s.phase === 'settle' && s.t >= KEEP.settle) {
+    } else if (step.event === 'rearm') {
       s.attempt = makeAttempt(rand)
-      s.phase = 'windup'
-      s.t = 0
       setCharacterMode('idle')
     }
 
@@ -135,8 +134,7 @@ export function KeepMatch({
     if (ball && shadow) {
       // During wind-up the ball waits at the dragon's feet; after the shot it
       // carries on past the goal line so it visibly hits the net.
-      const t = s.phase === 'windup' ? 0 : Math.min(s.t, KEEP.flightTime * 1.25)
-      const p = s.phase === 'windup' ? ballPosAt(s.attempt, 0) : ballPosAt(s.attempt, t)
+      const p = ballPosAt(s.attempt, ballFlightTime(s.clock))
       ball.position.set(p.x, Math.max(PITCH.ballRadius, p.y), p.z)
       ball.rotation.x -= dt * 9
       shadow.position.set(p.x, 0.02, p.z)
@@ -149,7 +147,7 @@ export function KeepMatch({
     if (striker) {
       striker.position.x = s.attempt.fromX
       // A little lunge on the kick, so the shot has a visible cause.
-      const lunge = s.phase === 'flight' ? Math.max(0, 1 - s.t / 0.3) : 0
+      const lunge = s.clock.phase === 'flight' ? Math.max(0, 1 - s.clock.t / 0.3) : 0
       striker.position.z = KEEP.shooterZ + 0.6 - lunge * 0.6
     }
 
@@ -163,12 +161,13 @@ export function KeepMatch({
       // that the frame loop does not reliably win — and the one thing this
       // marker must never do is fail to appear. A transform nobody declares is
       // unambiguous.
-      if (s.phase === 'windup') {
+      if (s.clock.phase === 'windup') {
         ring.position.set(s.attempt.targetX, s.attempt.targetY, PITCH.goalZ + 0.2)
         // Shrinks as the kick approaches: a countdown the child can feel.
-        const progress = Math.min(1, s.t / KEEP.windUp)
-        ring.scale.setScalar(1.5 - progress * 0.6 + Math.sin(s.t * 14) * 0.06)
-        ring.rotation.z = s.t * 1.4
+        const t = s.clock.t
+        const progress = Math.min(1, t / KEEP.windUp)
+        ring.scale.setScalar(1.5 - progress * 0.6 + Math.sin(t * 14) * 0.06)
+        ring.rotation.z = t * 1.4
       } else {
         ring.scale.setScalar(0)
       }
