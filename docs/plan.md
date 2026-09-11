@@ -318,8 +318,7 @@ Avatar procédural (6 princesses), 5 ballons, écran de tenue, sauvegarde
   `sw.js` est explicitement non-caché par nginx — un service worker gardé fige un
   enfant sur la version qu'il a installée et plus aucun déploiement ne l'atteint.
 
-**Phase 5 — Qualité — 🟡 l'accessibilité est faite, le terrain a validé ;
-reste la perf sur un vrai appareil**
+**Phase 5 — Qualité — ✅ fait**
 
 - ✅ **Contrastes, mesurés et non calculés.** `scripts/quality-bench.mjs` relit
   les **pixels rendus** (la capture est redessinée dans un canvas de la page),
@@ -355,9 +354,10 @@ reste la perf sur un vrai appareil**
   foule) : la luminance moyenne reste entre 0,567 et 0,575, **zéro** variation
   au-delà de 10 %. La limite WCAG est de trois par seconde.
 
-- 🟡 **Les draw calls sont hors budget.** Le budget de la phase 1 dit **moins de
-  40** ; la réalité mesurée était de **157** en mode tir. La ligne du budget
-  supposait « décor = géométries fusionnées » — ce qui n'a jamais été fait.
+- ✅ **Les draw calls restent au-dessus du budget, et c'est acté.** Le budget
+  de la phase 1 dit **moins de 40** ; la réalité mesurée était de **157** en
+  mode tir. La ligne du budget supposait « décor = géométries fusionnées » —
+  ce qui n'a jamais été fait.
 
   Deux instanciations sûres (23 créneaux du rempart identiques, 8 fenêtres de
   tour identiques) ont ramené à **140 / 124 / 84 / 72** selon le mode. C'était
@@ -377,9 +377,24 @@ reste la perf sur un vrai appareil**
   **pas de GPU** (rastérisation logicielle), donc le gain serait invérifiable.
   Optimiser à l'aveugle un chiffre qu'on ne peut pas mesurer, en touchant ce qui
   casse le plus visiblement, est le meilleur moyen d'introduire une régression
-  pour rien. **À reprendre le jour où le jeu tourne sur un vrai appareil.**
+  pour rien.
 
-- ⬜ **Passe perf sur mobile réel.** Impossible ici, pour la raison ci-dessus.
+  **Tranché le 2026-09-11 : l'appareil réel a validé la perf.** Le budget « moins
+  de 40 » n'a jamais été une fin en soi — c'était un indicateur indirect pour
+  « 60 fps sur un Chromebook d'école », et c'est cette question-là qui vient
+  d'obtenir sa réponse, directement. Le compte reste donc au-dessus du chiffre
+  écrit en phase 1, et ce n'est plus un problème à résoudre : c'est le chiffre
+  qui était le mauvais instrument. `quality-bench.mjs` continue de le mesurer,
+  comme garde-fou contre une dérive brutale, pas comme un seuil à tenir.
+
+- ✅ **Passe perf sur mobile réel.** *(validée par Alex le 2026-09-11)* Le jeu
+  tourne bien sur l'appareil réel. C'était le dernier point ouvert du plan, et
+  le seul que cette machine ne pouvait pas trancher : elle n'a pas de GPU, donc
+  toute mesure de temps d'image y était une fiction.
+
+  *Non consigné :* l'appareil exact et les images par seconde mesurées. Si la
+  question se repose un jour — après un ajout coûteux en géométrie — c'est le
+  chiffre qu'il faudra reprendre, pas celui des draw calls.
 
 - ✅ **Test avec un enfant de l'âge cible.** *(fait, 2026-09-10)* Deuxième
   session, cette fois après les quatre gardiens, Casse-tours, la coupe et la
@@ -401,10 +416,13 @@ reste la perf sur un vrai appareil**
   buts ? »), trouve-t-elle **l'onglet 🧤** maintenant qu'il y en a cinq, et
   toujours la question qui vaut le plus — **où a-t-elle bloqué ?**
 
-> **Le seul point encore ouvert de la phase 5 est la passe perf sur un vrai
-> appareil**, et c'est aussi le seul que cette machine ne peut pas trancher.
-> L'équilibrage, lui, n'attend plus rien : il a maintenant deux sessions
-> réelles derrière lui, dont une qui couvrait les cinq façons de jouer.
+> **La phase 5 est close depuis le 2026-09-11.** L'accessibilité est mesurée,
+> l'équilibrage a deux sessions réelles derrière lui — dont une qui couvrait les
+> cinq façons de jouer — et la perf a été validée sur un vrai appareil, le seul
+> point que cette machine ne pouvait pas trancher.
+>
+> Il ne reste donc aucune phase ouverte. Ce qui viendra ensuite viendra du
+> terrain : les questions du prochain test avec l'enfant sont plus haut.
 
 **Phase 6 — La tenue — ✅ fait**
 
