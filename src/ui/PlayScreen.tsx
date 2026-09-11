@@ -239,9 +239,15 @@ export function PlayScreen() {
           <KeepOverlay hint={t('run.hint')} halfWidth={RUN.laneHalfWidth} onAim={(x) => runApi.current?.aimAt(x)} />
         ))}
 
-      <Hud shotsTaken={shotsTaken} goals={goals} mode={mode} onQuit={goHome} progress={() => runApi.current?.progress() ?? 0} />
+      <Hud
+        shotsTaken={shotsTaken}
+        goals={goals}
+        mode={mode}
+        cupLeg={screen === 'play' ? cupLeg : null}
+        onQuit={goHome}
+        progress={() => runApi.current?.progress() ?? 0}
+      />
       <Shout />
-      {cupLeg !== null && screen === 'play' && <CupBanner leg={cupLeg} />}
 
       {screen === 'result' && <ResultScreen />}
       {screen === 'trophy' && <TrophyScreen />}
@@ -253,12 +259,15 @@ function Hud({
   shotsTaken,
   goals,
   mode,
+  cupLeg,
   onQuit,
   progress,
 }: {
   shotsTaken: number
   goals: number
   mode: GameMode
+  /** Which leg of the Coupe du Royaume this is, or null outside the cup. */
+  cupLeg: number | null
   onQuit: () => void
   /** Runner mode only: how far through the run we are, 0..1. */
   progress: () => number
@@ -294,6 +303,7 @@ function Hud({
           </span>
           <span className="text-2xl font-black text-yellow-200">⭐ {stars}</span>
         </div>
+        {cupLeg !== null && <CupBanner leg={cupLeg} />}
       </div>
     </div>
   )
@@ -341,7 +351,13 @@ function Shout() {
     // toppling tower or the diving keeper — the one second of payoff the child
     // is actually watching for, hidden behind a word they cannot read. The band
     // above the goal is empty sky in every mode.
-    <div className="pointer-events-none absolute inset-0 flex items-start justify-center pt-28">
+    //
+    // It clears the whole HUD stack, not just the two rows that used to be
+    // there: inside the cup the stack grows a third row, and a shout as short
+    // as "Saved!" already reached across it on a 390-wide phone. A longer
+    // translation reaches further, so this is measured against the stack's
+    // height rather than the widest string.
+    <div className="pointer-events-none absolute inset-0 flex items-start justify-center pt-44">
       <p
         key={shoutId}
         className="animate-pop-in max-w-[92vw] break-words text-center text-[clamp(2rem,11vw,3.75rem)]

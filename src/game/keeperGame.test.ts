@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { KEEP, PITCH, ROUND, visibleHalfWidthAt } from './constants'
+import type { AttemptEvent } from './keeperGame'
 import {
+  ballFlightTime,
   ballPosAt,
   isSave,
   makeAttempt,
+  makeAttemptClock,
   seededRandom,
   starsForSaves,
+  stepAttemptClock,
   stepPlayerKeeper,
 } from './keeperGame'
 
@@ -181,5 +185,68 @@ describe('difficulty balance (keeping)', () => {
 
   it('is not a formality — dawdling costs goals', () => {
     expect(playRound(1.7, 13)).toBeLessThan(0.9)
+  })
+})
+
+
+describe('the attempt clock', () => {
+  const DT = 1 / 60
+
+  /** Runs the clock for `seconds`, collecting what the ball did along the way. */
+  function play(seconds: number, held = false) {
+    let clock = makeAttemptClock()
+    const events: AttemptEvent[] = []
+    const flight: number[] = []
+    for (let t = 0; t < seconds; t += DT) {
+      const step = stepAttemptClock(clock, DT, held)
+      clock = step.clock
+      if (step.event) events.push(step.event)
+      flight.push(ballFlightTime(clock))
+    }
+    return { clock, events, flight }
+  }
+
+  it('kicks, judges, then re-arms — once each per attempt', () => {
+    const cycle = KEEP.windUp + KEEP.flightTime + KEEP.settle
+    const { events } = play(cycle + DT * 2)
+    expect(events).toEqual(['kick', 'judged', 'rearm'])
+  })
+
+  it('never sends the ball a second time once the shot has been judged', () => {
+    // The bug this exists for: the ball was drawn from the *phase* timer, which
+    // resets to zero at every transition. The moment the shot was judged it
+    // teleported back to the shooter's feet and flew the whole way again, while
+    // the HUD already showed the save. A child saw two shots and one result.
+    // Stops just short of the re-arm, where going back to zero is the point.
+    const { flight } = play(KEEP.windUp + KEEP.flightTime + KEEP.settle - DT * 4)
+    const kicked = flight.findIndex((f) => f > 0)
+    expect(kicked).toBeGreaterThan(0)
+    for (let i = kicked + 1; i < flight.length; i++) {
+      expect(flight[i]).toBeGreaterThanOrEqual(flight[i - 1])
+    }
+  })
+
+  it('carries the ball past the goal line and holds it there', () => {
+    const { flight } = play(KEEP.windUp + KEEP.flightTime + KEEP.settle)
+    const furthest = Math.max(...flight)
+    expect(furthest).toBeGreaterThan(KEEP.flightTime)
+    expect(furthest).toBeCloseTo(KEEP.flightTime * KEEP.followThrough, 5)
+    // Past the line means past the line: the ball ends up behind the keeper.
+    expect(ballPosAt(makeAttempt(seededRandom(3)), furthest).z).toBeLessThan(PITCH.goalZ)
+  })
+
+  it('starts the next attempt back at the shooter, not mid-flight', () => {
+    const cycle = KEEP.windUp + KEEP.flightTime + KEEP.settle
+    const { clock, flight } = play(cycle + DT * 2)
+    expect(clock.phase).toBe('windup')
+    expect(flight[flight.length - 1]).toBe(0)
+  })
+
+  it('never takes a shot while the round is held', () => {
+    // The result panel is on screen; a shot fired behind it would be judged
+    // against a keeper the child is no longer allowed to move.
+    const { events, flight } = play(12, true)
+    expect(events).toEqual([])
+    expect(Math.max(...flight)).toBe(0)
   })
 })
