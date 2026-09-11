@@ -72,7 +72,9 @@ de rejouer, pas le score.
 - **Une tenue** : un seul objet porté à la fois — ailes, capes, couronnes —
   posé sur n'importe quel personnage.
 - **Ballons** : classique, licorne, arc-en-ciel, étoile, ballon-gâteau.
-- **Stades** : prairie, château, plage, royaume des glaces, nuit étoilée.
+- **Stades** : prairie, plage, royaume des glaces, nuit étoilée. *(Quatre, pas
+  cinq : le « château » listé ici au départ n'a jamais été livré, la prairie
+  jouant déjà au pied du château. Voir la phase 3.)*
 - **Mascotte** qui court sur le terrain : chat, licorne, dragon bébé.
 
 ---
@@ -125,7 +127,11 @@ royaume-foot/
   et la princesse. C'est plus joli en cartoon et ~gratuit.
 - Foule = `InstancedMesh`, décor = géométries fusionnées → **< 40 draw calls**.
 - Matériaux `MeshToonMaterial` / `MeshBasicMaterial`, pas de PBR.
-- Chaque mini-jeu en **`lazy()` / chunk séparé**.
+- ~~Chaque mini-jeu en **`lazy()` / chunk séparé**.~~ **Abandonné, mesure à
+  l'appui** (2026-09-11) : le bundle entier pèse **338 ko gzip** pour un budget
+  de 700, et la PWA précharge de toute façon les 18 entrées — découper n'avance
+  donc rien, ni au premier chargement ni ensuite. Il n'y a aucun `lazy()` dans
+  `src/`, et c'est très bien ainsi. *(Même genre de renoncement que `drei`.)*
 
 ---
 
@@ -493,7 +499,7 @@ installée, et plus aucun déploiement ne l'atteint.
 
 | Risque | Parade |
 | --- | --- |
-| three.js alourdit le site collage | Entrées et bundles séparés — le collage n'importe jamais three. Vérifié via `npm run analyze`. |
+| ~~three.js alourdit le site collage~~ | **Caduc.** Le jeu a son propre dépôt et son propre domaine depuis l'extraction ; il n'y a plus de site collage à alourdir, et le script `npm run analyze` que citait cette ligne n'existe plus. |
 | 60 fps pas tenus sur vieux matériel | Budget draw calls fixé dès la phase 1 ; test sur throttling CPU 4× à chaque phase. |
 | Trop difficile pour un enfant de 6 ans | Gardien volontairement lent, but large, aide à la visée (aimant léger vers la cage), aucun échec. Test réel avec un enfant après la phase 2. |
 | Le jeu casse la prod du collage | Développement sur branche dédiée, `main` reste déployable ; les 2 builds sont indépendants. |

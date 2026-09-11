@@ -246,6 +246,23 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
 - **Never re-render per frame.** The match loop writes straight to the scene
   graph through refs inside `useFrame`. React state is for discrete events only
   (a shot was judged, the round ended).
+- **A phase timer is not a ball clock.** Keeper mode reset its timer to zero at
+  every phase change *and* drew the ball from it, so the instant a shot was
+  judged the ball teleported back to the shooter's feet and flew the whole way
+  again — two shots, one result, and only the first one counted. Anything whose
+  position is a function of time needs its own clock, running across the phase
+  boundaries it survives. `game/keeperGame.ts` owns that clock now
+  (`stepAttemptClock`, `ballFlightTime`) precisely so a test can hold it to the
+  invariant: **the ball's flight time never goes backwards within one attempt.**
+- **A DOM overlay pinned in pixels will find whatever the scene puts in world
+  units.** The cup's leg banner sat a fixed distance off the bottom of the
+  screen; the ball sits at a fixed point on the pitch. They cleared each other
+  by 22 px on a 390-wide phone and the banner lay straight across the ball on a
+  768-wide tablet. `visibleHalfWidthAt(z)` guards the 3D side of this; the DOM
+  side has no equivalent, so **persistent HUD chrome belongs in the HUD stack**,
+  where flexbox keeps it off the pitch at every size. Check a tablet and a short
+  landscape window, not just the phone — and remember the stack has one more row
+  inside the Coupe du Royaume, which is what pushed the shout down to clear it.
 - **Write scene transforms from state, never accumulate them onto the mesh.**
   `mesh.rotation.z += …` in a frame loop outlives whatever reset the state: the
   tower blocks kept the tilt they fell with, so a rebuilt tower was stacked out
@@ -266,14 +283,18 @@ because a sphere squeezes anything near the top or bottom edge into a smear.
   large `dt` is still accurate.
 - **Perf budget:** no shadow maps (blob shadows instead), `dpr` capped at 2,
   crowd in one `InstancedMesh`, toon/lambert materials only. Target is a school
-  Chromebook at 60 fps. The plan's number is **under 40 draw calls** and the
-  game is **over it** — 149 in `shoot` and 134 in `keep`. It was 140 / 125
-  after instancing the castle's decor (down from 157); the dragon rebuild put
-  nine back, knowingly. The characters and keepers are the cost: dozens of
-  primitives each, inside groups that animate, so they cannot be merged without
-  redoing the rigs. Measure with `scripts/quality-bench.mjs` before touching it,
-  and do not "optimise" this on a machine with no GPU — the benefit is
-  unmeasurable there and the risk is a visible regression.
+  Chromebook at 60 fps, and **that target was checked on a real device on
+  2026-09-11: the game runs well.** The plan's "under 40 draw calls" is not a
+  debt to pay off — it was a proxy for exactly the question the device has now
+  answered directly. The game sits at 149 in `shoot`, 134 in `keep`, 84 in
+  `run`, 72 in `tower`, and that is accepted. The characters and keepers are
+  the cost: dozens of primitives each, inside groups that animate, so they
+  cannot be merged without redoing the rigs.
+
+  Keep measuring with `scripts/quality-bench.mjs` — as a guard against a sudden
+  jump, not as a threshold to hold. Do **not** "optimise" this on a machine with
+  no GPU: the benefit is unmeasurable there and the risk is a visible
+  regression.
 - **Repeated identical decor gets instanced**, not mapped into N meshes. The
   `Repeated` helper in `Pitch.tsx` is there for it.
 - **Check what is actually on screen before placing anything.** The camera
@@ -333,9 +354,13 @@ kingdom-map merge (437c9c5) started a deployment on its own.
 ## Git workflow
 
 - **`main` = production**, and stays green.
-- Feature branches off `main`, Conventional Commits (`feat:`, `fix:`, `chore:`…).
+- The flow is **`feature` → `dev` → `main`**. Branch off `dev` for the task,
+  merge it back into `dev`, and merge `dev` into `main` to release. Conventional
+  Commits (`feat:`, `fix:`, `chore:`…), merges `--no-ff` so a change keeps its
+  own commits.
 - **Never push or merge without the user's explicit go-ahead**, unless they have
-  clearly granted autonomy for that piece of work.
+  clearly granted autonomy for that piece of work. A go-ahead to *merge* is not
+  a go-ahead to *push*: pushing `main` is what deploys.
 
 ## History
 
