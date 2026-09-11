@@ -189,6 +189,11 @@ export const KEEP = {
   shooterHalfWidth: 0.7,
   /** How long the result is held on screen before the next shot. */
   settle: 1.6,
+  /**
+   * How far past the goal line the ball carries, as a multiple of the flight
+   * time, so it is visibly in the net rather than stopping on the line.
+   */
+  followThrough: 1.25,
 } as const
 
 /**
