@@ -15,6 +15,12 @@ const INK = '#6b4a86'
  *
  * The mane is her width. She has no wings to fill the goal with, so the mane
  * and tail are drawn generously — they are what stops her reading as small.
+ *
+ * Generously, and **to the sides**. Both were first drawn down the back of the
+ * neck and behind the barrel, which is anatomically right and invisible: every
+ * species faces +z, so the only view that exists put the neck in front of the
+ * mane and the body in front of the tail. `trim` never reached the screen at
+ * all and she read as a white blob on four sticks.
  */
 export function Unicorn({ data }: { data: KeeperData }) {
   const rig = useKeeperRigRefs()
@@ -84,10 +90,12 @@ function Neck({ data }: { data: KeeperData }) {
           <meshToonMaterial color={data.body} />
         </mesh>
       ))}
-      {/* Mane down the back of the neck, in overlapping tufts. */}
+      {/* Mane in overlapping tufts, each one wider than the neck it sits behind
+          so it reads as a fringe down both sides rather than a stripe nobody
+          can see. */}
       {[0, 1, 2, 3].map((i) => (
-        <mesh key={`m${i}`} position={[0, 1.34 + i * 0.2, 0.05 + i * 0.02]} rotation={[0.4, 0, 0]} scale={[0.6, 1, 1]}>
-          <sphereGeometry args={[0.17, 8, 8]} />
+        <mesh key={`m${i}`} position={[0, 1.34 + i * 0.2, 0.06 + i * 0.03]} rotation={[0.4, 0, 0]} scale={[1.9, 1.05, 0.5]}>
+          <sphereGeometry args={[0.19, 10, 8]} />
           <meshToonMaterial color={data.trim} />
         </mesh>
       ))}
@@ -97,7 +105,10 @@ function Neck({ data }: { data: KeeperData }) {
 
 function Head({ data, rig }: { data: KeeperData; rig: ReturnType<typeof useKeeperRigRefs> }) {
   return (
-    <group position={[0, 2.06, 0.36]}>
+    // Scaled as a whole rather than sphere-by-sphere: at twenty-five units her
+    // head was a thumbnail on a barrel and the face — the part rule 3 leans on
+    // — did not survive the distance.
+    <group position={[0, 2.06, 0.36]} scale={1.2}>
       <mesh scale={[0.9, 1, 1.15]}>
         <sphereGeometry args={[0.27, 14, 12]} />
         <meshToonMaterial color={data.body} />
@@ -118,10 +129,12 @@ function Head({ data, rig }: { data: KeeperData; rig: ReturnType<typeof useKeepe
         </mesh>
       ))}
 
-      {/* The horn. Spiralled by stacking cones of falling radius. */}
+      {/* The horn. Spiralled by stacking cones of falling radius, and drawn
+          thick: it is the one shape that says unicorn rather than pony, and a
+          fine gold spike against the pink net said nothing at all. */}
       {[0, 1, 2, 3].map((i) => (
-        <mesh key={`h${i}`} position={[0, 0.3 + i * 0.1, 0.06]} rotation={[-0.25, 0, 0]}>
-          <coneGeometry args={[0.075 - i * 0.017, 0.13, 7]} />
+        <mesh key={`h${i}`} position={[0, 0.31 + i * 0.12, 0.06]} rotation={[-0.25, 0, 0]}>
+          <coneGeometry args={[0.095 - i * 0.02, 0.16, 7]} />
           <meshToonMaterial color={data.accent} />
         </mesh>
       ))}
@@ -152,8 +165,8 @@ function Tail({ data }: { data: KeeperData }) {
   return (
     <>
       {[0, 1, 2, 3].map((i) => (
-        <mesh key={i} position={[0, -i * 0.16, -0.08 - i * 0.05]} rotation={[0.3, 0, 0]} scale={[0.7, 1, 0.7]}>
-          <sphereGeometry args={[0.16 - i * 0.02, 8, 8]} />
+        <mesh key={i} position={[0, -i * 0.16, -0.08 - i * 0.05]} rotation={[0.3, 0, 0]} scale={[1.5, 1, 0.6]}>
+          <sphereGeometry args={[0.17 - i * 0.02, 8, 8]} />
           <meshToonMaterial color={data.trim} />
         </mesh>
       ))}

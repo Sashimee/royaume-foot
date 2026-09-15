@@ -120,12 +120,30 @@ function Head({ data }: { data: KeeperData }) {
   )
 }
 
-/** Feathered rather than membraned: a fan of quills over a sector. */
+/**
+ * Feathered rather than membraned: a fan of quills over a sector.
+ *
+ * The fan lies in the **XY plane**, facing the camera, like the dragon's. It
+ * was turned `Math.PI / 2` about y — the same mistake the dragon's membranes
+ * carried for two releases — so both wings rendered edge-on as thin blades and
+ * he read as a tan chick with sticks behind it.
+ *
+ * The sector is cut facing outwards, which means mirroring it rather than
+ * reusing one sweep: a sector aimed left on the right wing points back across
+ * his own chest.
+ *
+ * Scaled to keep his span inside the dragon's. A wing that faces the camera is
+ * suddenly as wide as it always claimed to be, and the keep-mode shooter
+ * stands where only so much fits on screen — see `KEEP.shooterHalfWidth`.
+ */
 function Wing({ data, side }: { data: KeeperData; side: number }) {
+  const sweep = Math.PI * 0.72
+  const start = side < 0 ? Math.PI * 0.72 : -Math.PI * 0.44
+
   return (
-    <group rotation={[0, side * 0.22, 0]}>
-      <mesh position={[side * 0.44, 0.06, 0]} rotation={[0, Math.PI / 2, side * 0.18]}>
-        <circleGeometry args={[0.84, 10, Math.PI * 0.72, Math.PI * 0.72]} />
+    <group rotation={[0, side * 0.22, 0]} scale={0.84}>
+      <mesh position={[side * 0.1, 0.06, 0]} rotation={[0, 0, side * 0.18]}>
+        <circleGeometry args={[0.84, 10, start, sweep]} />
         <meshToonMaterial color={data.body} side={THREE.DoubleSide} />
       </mesh>
       {[0, 1, 2, 3].map((i) => (

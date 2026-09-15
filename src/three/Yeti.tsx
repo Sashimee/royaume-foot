@@ -106,9 +106,12 @@ function Head({ data }: { data: KeeperData }) {
           <meshToonMaterial color={data.accent} />
         </mesh>
       ))}
-      {/* Brow tufts. */}
+      {/* Brow tufts, tilted so the *inner* ends ride high. They were tilted the
+          other way, which is the one shape a brow has that means angry, and at
+          twenty-five units a scowl is the only thing about him that survives
+          the distance. Rule 3 is not just about what the game does to you. */}
       {[-1, 1].map((side) => (
-        <mesh key={`b${side}`} position={[side * 0.17, 0.19, 0.2]} rotation={[0, 0, side * 0.3]} scale={[1.4, 0.6, 0.6]}>
+        <mesh key={`b${side}`} position={[side * 0.17, 0.21, 0.2]} rotation={[0, 0, side * -0.16]} scale={[1.4, 0.6, 0.6]}>
           <sphereGeometry args={[0.08, 8, 6]} />
           <meshToonMaterial color={data.trim} />
         </mesh>

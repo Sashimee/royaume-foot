@@ -43,10 +43,18 @@ export function KeeperFace({
   )
 }
 
-/** An upturned mouth. A half-torus, so it curves the right way at any size. */
+/**
+ * An upturned mouth. A half-torus, so it curves the right way at any size.
+ *
+ * The half-turn about z is the whole smile: a torus arc sweeps from angle 0
+ * **upwards**, so the bare geometry is a ∩ — a frown. It shipped that way, and
+ * on the yeti, whose mouth is the widest of the four, the scowl was the most
+ * legible thing about him from the penalty spot. `Knight.tsx` draws the same
+ * shape and has always flipped it.
+ */
 export function KeeperSmile({ ink, width = 0.09, y = -0.14, z = 0.36 }: { ink: string; width?: number; y?: number; z?: number }) {
   return (
-    <mesh position={[0, y, z]}>
+    <mesh position={[0, y, z]} rotation={[0, 0, Math.PI]}>
       <torusGeometry args={[width, width * 0.2, 6, 12, Math.PI]} />
       <meshBasicMaterial color={ink} />
     </mesh>
