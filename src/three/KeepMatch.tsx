@@ -148,7 +148,7 @@ export function KeepMatch({
       striker.position.x = s.attempt.fromX
       // A little lunge on the kick, so the shot has a visible cause.
       const lunge = s.clock.phase === 'flight' ? Math.max(0, 1 - s.clock.t / 0.3) : 0
-      striker.position.z = KEEP.shooterZ + 0.6 - lunge * 0.6
+      striker.position.z = KEEP.shooterZ + KEEP.shooterLunge * (1 - lunge)
     }
 
     const ring = ringRef.current
