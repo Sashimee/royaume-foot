@@ -177,16 +177,22 @@ export const KEEP = {
    * out and off to one side (see `shooterMinX`) he stays small and clear of the
    * goal mouth the child needs to watch.
    */
-  shooterZ: -8,
+  shooterZ: -9,
+  /** He stands this much nearer the camera than `shooterZ` and lunges forward onto it to kick. */
+  shooterLunge: 0.6,
   /**
    * The shooter always stands at least this far off centre, on one side. The
    * spread is capped so his whole body stays on screen — see the test that
    * checks it against visibleHalfWidthAt(shooterZ).
    */
-  shooterMinX: 2.5,
-  shooterSideSpread: 0.7,
-  /** Roughly half the dragon's width, for that on-screen check. */
-  shooterHalfWidth: 0.7,
+  shooterMinX: 2.2,
+  shooterSideSpread: 0.35,
+  /**
+   * Half the widest striker's span, wingtip included, at the `<Keeper>` scale.
+   * Measured from the dragon's geometry; it was once guessed at half this and
+   * the outer wing hung off the frame.
+   */
+  shooterHalfWidth: 1.4,
   /** How long the result is held on screen before the next shot. */
   settle: 1.6,
   /**
