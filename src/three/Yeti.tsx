@@ -4,6 +4,22 @@ import { KeeperFace, KeeperSmile } from './KeeperParts'
 
 const INK = '#3f5566'
 
+/** Angle and length of each tuft, over the shoulders and along the hem. */
+const SHOULDER_FUR: [number, number][] = [
+  [0.22, 0.3],
+  [0.6, 0.36],
+  [1.0, 0.28],
+  [2.14, 0.28],
+  [2.54, 0.36],
+  [2.92, 0.3],
+]
+const HEM_FUR: [number, number][] = [
+  [3.62, 0.26],
+  [4.2, 0.3],
+  [5.1, 0.3],
+  [5.68, 0.26],
+]
+
 /**
  * The yeti.
  *
@@ -23,24 +39,44 @@ export function Yeti({ data }: { data: KeeperData }) {
     <group ref={rig.body}>
       <Legs data={data} />
 
-      {/* One broad shaggy mass. The fur tufts around its edge are what stop it
-          reading as a snowman. */}
-      <mesh position={[0, 1.06, 0]} scale={[1.18, 1.05, 1]}>
-        <sphereGeometry args={[0.6, 16, 14]} />
+      {/* Heavy shoulders over a narrower hip. One sphere made him a snowman:
+          the taper is what says ape, and it survives to the penalty spot where
+          fur texture does not. */}
+      <mesh position={[0, 1.3, 0]} scale={[1.34, 0.86, 0.92]}>
+        <sphereGeometry args={[0.62, 16, 14]} />
         <meshToonMaterial color={data.body} />
       </mesh>
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const a = (i / 6) * Math.PI * 2
-        return (
-          <mesh key={i} position={[Math.cos(a) * 0.62, 1.06 + Math.sin(a) * 0.5, -0.05]} scale={[1, 1, 0.6]}>
-            <sphereGeometry args={[0.19, 8, 8]} />
-            <meshToonMaterial color={data.bodyDark} />
-          </mesh>
-        )
-      })}
-      {/* Chest fur, lighter. */}
-      <mesh position={[0, 0.94, 0.42]} scale={[1, 1.15, 0.4]}>
-        <sphereGeometry args={[0.32, 12, 10]} />
+      <mesh position={[0, 0.82, 0.02]} scale={[1.02, 0.94, 0.9]}>
+        <sphereGeometry args={[0.5, 14, 12]} />
+        <meshToonMaterial color={data.body} />
+      </mesh>
+      {/* The fur. Cones on the outline, not bumps inside it: the tufts used to
+          be spheres sunk in the body, where a silhouette never sees them. */}
+      {SHOULDER_FUR.map(([angle, length], i) => (
+        <mesh
+          key={i}
+          position={[Math.cos(angle) * 0.82, 1.3 + Math.sin(angle) * 0.52, -0.05]}
+          rotation={[0, 0, angle - Math.PI / 2]}
+        >
+          <coneGeometry args={[0.15, length, 5]} />
+          <meshToonMaterial color={data.body} />
+        </mesh>
+      ))}
+      {HEM_FUR.map(([angle, length], i) => (
+        <mesh
+          key={i}
+          position={[Math.cos(angle) * 0.5, 0.82 + Math.sin(angle) * 0.46, -0.02]}
+          rotation={[0, 0, angle - Math.PI / 2]}
+        >
+          <coneGeometry args={[0.13, length, 5]} />
+          <meshToonMaterial color={data.body} />
+        </mesh>
+      ))}
+      {/* Chest fur, white against the blue-grey coat. It has to stand proud of
+          the shoulder sphere's own front face or it sits inside him and simply
+          is not there — which is where it was. */}
+      <mesh position={[0, 0.98, 0.44]} scale={[0.92, 1.0, 0.26]}>
+        <sphereGeometry args={[0.4, 12, 10]} />
         <meshToonMaterial color={data.belly} />
       </mesh>
 
@@ -48,10 +84,10 @@ export function Yeti({ data }: { data: KeeperData }) {
         <Head data={data} />
       </group>
 
-      <group ref={rig.limbL} position={[-0.66, 1.3, 0]}>
+      <group ref={rig.limbL} position={[-0.6, 1.5, 0.02]}>
         <Arm data={data} side={-1} />
       </group>
-      <group ref={rig.limbR} position={[0.66, 1.3, 0]}>
+      <group ref={rig.limbR} position={[0.6, 1.5, 0.02]}>
         <Arm data={data} side={1} />
       </group>
     </group>
@@ -120,29 +156,36 @@ function Head({ data }: { data: KeeperData }) {
   )
 }
 
-/** Held out and slightly down, the way someone bracing to catch a ball holds them. */
+/**
+ * Held out and slightly down, the way someone bracing to catch a ball holds
+ * them — and long. Short arms on a round body read as a snowsuit; an arm that
+ * reaches past the hip is the thing that says ape.
+ */
 function Arm({ data, side }: { data: KeeperData; side: number }) {
   return (
-    <group rotation={[0, 0, side * -0.55]}>
-      <mesh position={[side * 0.24, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <capsuleGeometry args={[0.17, 0.42, 4, 10]} />
-        <meshToonMaterial color={data.body} />
+    <group rotation={[0, 0, side * -0.62]}>
+      {/* A shade under the torso. Same colour as the body and the arm vanished
+          into the shoulder, leaving one wide pale poncho. */}
+      <mesh position={[side * 0.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <capsuleGeometry args={[0.19, 0.62, 4, 10]} />
+        <meshToonMaterial color={data.bodyDark} />
       </mesh>
-      {/* Shaggy edge along the forearm. */}
-      {[0, 1, 2].map((i) => (
-        <mesh key={i} position={[side * (0.14 + i * 0.16), -0.13, 0]} scale={[1, 0.8, 0.7]}>
-          <sphereGeometry args={[0.1, 8, 6]} />
-          <meshToonMaterial color={data.bodyDark} />
+      {/* Shaggy edge along the forearm, cut as points so the underside of the
+          arm is ragged rather than piped. */}
+      {[0, 1, 2, 3].map((i) => (
+        <mesh key={i} position={[side * (0.14 + i * 0.18), -0.24, -0.02]} rotation={[0, 0, Math.PI + side * 0.4]}>
+          <coneGeometry args={[0.13, 0.26, 5]} />
+          <meshToonMaterial color={data.body} />
         </mesh>
       ))}
       {/* Open hand. */}
-      <mesh position={[side * 0.53, -0.04, 0.02]}>
-        <sphereGeometry args={[0.19, 10, 8]} />
+      <mesh position={[side * 0.72, -0.04, 0.02]} scale={[1, 1.05, 0.9]}>
+        <sphereGeometry args={[0.21, 10, 8]} />
         <meshToonMaterial color={data.trim} />
       </mesh>
       {[-1, 0, 1].map((f) => (
-        <mesh key={f} position={[side * 0.66, 0.02 + f * 0.11, 0.03]} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.045, 0.1, 4, 6]} />
+        <mesh key={f} position={[side * 0.87, 0.02 + f * 0.12, 0.03]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.05, 0.1, 4, 6]} />
           <meshToonMaterial color={data.trim} />
         </mesh>
       ))}
