@@ -100,6 +100,14 @@ export const KEEPER = {
   reachHeight: 2.0,
   /** Length of the dive animation, seconds. */
   diveDuration: 0.45,
+  /**
+   * How far in front of the goal line the keeper stands.
+   *
+   * The shot is judged at the line, but he is not on it — a save that started
+   * its rebound from the line had already flown through him, which a child
+   * reads as the ball going straight through the keeper. See `punchClear()`.
+   */
+  standOff: 0.55,
 } as const
 
 export const ROUND = {

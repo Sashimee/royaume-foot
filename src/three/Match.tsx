@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { PITCH, SHOT_TIMEOUT } from '../game/constants'
+import { KEEPER, PITCH, SHOT_TIMEOUT } from '../game/constants'
 import type { Shot } from '../game/aim'
 import { crossPlaneZ, makeBall, stepBall } from '../game/physics'
 import type { BallState } from '../game/physics'
-import { makeKeeper, startDive, stepKeeper } from '../game/keeper'
+import { makeKeeper, punchClear, startDive, stepKeeper } from '../game/keeper'
 import type { KeeperState } from '../game/keeper'
 import { evaluateCrossing } from '../game/scoring'
 import type { ShotOutcome } from '../game/scoring'
@@ -189,7 +189,7 @@ export function Match({
 
     const keeper = keeperRef.current
     if (keeper) {
-      keeper.position.set(s.keeper.x, 0, PITCH.goalZ + 0.55)
+      keeper.position.set(s.keeper.x, 0, PITCH.goalZ + KEEPER.standOff)
       const diving = s.keeper.diveDir !== 0
       const lean = diving ? s.keeper.diveDir * 0.75 : 0
       keeper.rotation.z = THREE.MathUtils.lerp(keeper.rotation.z, -lean, 0.25)
@@ -205,10 +205,10 @@ export function Match({
     s.keeper = startDive(s.keeper, crossX)
 
     if (verdict.outcome === 'save') {
-      // Punched clear, back towards the shooter.
-      s.ball.v.z = Math.abs(s.ball.v.z) * 0.45
-      s.ball.v.y = Math.abs(s.ball.v.y) * 0.4 + 2
-      s.ball.spin = 0
+      s.ball = punchClear(s.ball, crossX, crossY)
+      // The contact sits back in front of the line, so the sparkles left behind
+      // would hang in the net after the ball has come out of it.
+      trail.current = []
     } else if (verdict.outcome === 'post') {
       s.ball.v.x *= -0.6
       s.ball.v.z = Math.abs(s.ball.v.z) * 0.35
