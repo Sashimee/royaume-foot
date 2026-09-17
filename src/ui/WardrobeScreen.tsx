@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { useGame } from '../store/gameStore'
 import { isUnlocked, useSave } from '../store/saveStore'
-import { BALLS, KNIGHTS, PRINCESSES, characterById } from '../data/roster'
+import { BALLS, KNIGHTS, PRINCESSES, ballById, characterById } from '../data/roster'
 import { STADIUMS } from '../data/stadiums'
 import { MASCOTS, mascotById } from '../data/mascots'
 import { KEEPERS, keeperById } from '../data/keepers'
@@ -13,6 +13,7 @@ import type { TranslationKey } from '../i18n/translations'
 import { Character } from '../three/Character'
 import { Mascot } from '../three/Mascot'
 import { Keeper } from '../three/Keeper'
+import { BallShowcase } from '../three/Ball'
 import { BigButton, IconButton, PickCard } from './ui'
 import { ScrollArea } from './ScrollArea'
 import { ResetStars } from './ResetStars'
@@ -87,7 +88,14 @@ export function WardrobeScreen() {
                 showcase
                 position={[0, -0.95, 0]}
               />
-              <Mascot data={mascotById(mascotId)} home={[0.95, -0.95, 0.45]} />
+              {/* The ball takes the pet's place rather than sitting beside it:
+                  two things turning either side of her is a busier picture than
+                  a 160 px strip can carry. */}
+              {tab === 'balls' ? (
+                <BallShowcase skin={ballById(ballId)} position={[1.18, -0.5, 0.5]} scale={1.85} />
+              ) : (
+                <Mascot data={mascotById(mascotId)} home={[0.95, -0.95, 0.45]} />
+              )}
             </>
           )}
         </Canvas>

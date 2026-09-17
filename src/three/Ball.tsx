@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { PITCH } from '../game/constants'
 import type { BallSkin } from '../data/roster'
 import { ballTexture } from './textures'
+import { useReducedMotion } from './reducedMotion'
 
 export const TRAIL_LENGTH = 10
 
@@ -18,6 +19,43 @@ export function Ball({ skin, ref }: { skin: BallSkin; ref: RefObject<THREE.Group
   return (
     <group ref={ref} position={[PITCH.ballStart.x, PITCH.ballStart.y, PITCH.ballStart.z]}>
       <mesh>
+        <sphereGeometry args={[PITCH.ballRadius, 24, 18]} />
+        <meshToonMaterial map={map} />
+      </mesh>
+    </group>
+  )
+}
+
+/**
+ * The ball on the wardrobe turntable.
+ *
+ * A ball card carries the emoji only — the pattern *is* the item, and a child
+ * choosing one had no way of seeing what they were choosing until it was under
+ * their feet on the pitch. It turns like the character beside it so the motif
+ * comes round, and stops turning under `prefers-reduced-motion`.
+ */
+export function BallShowcase({
+  skin,
+  position = [0, 0, 0],
+  scale = 1,
+}: {
+  skin: BallSkin
+  position?: [number, number, number]
+  scale?: number
+}) {
+  const group = useRef<THREE.Group>(null)
+  const map = useMemo(() => ballTexture(skin), [skin])
+  const reduced = useReducedMotion()
+
+  useFrame((_, dt) => {
+    if (reduced) return
+    const g = group.current
+    if (g) g.rotation.y += dt * 0.8
+  })
+
+  return (
+    <group ref={group} position={position} scale={scale}>
+      <mesh rotation={[0.28, 0, 0.2]}>
         <sphereGeometry args={[PITCH.ballRadius, 24, 18]} />
         <meshToonMaterial map={map} />
       </mesh>

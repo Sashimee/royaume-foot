@@ -1,4 +1,5 @@
-import { KEEPER } from './constants'
+import { KEEPER, PITCH } from './constants'
+import type { BallState } from './physics'
 
 export interface KeeperState {
   x: number
@@ -48,4 +49,29 @@ export function startDive(k: KeeperState, towardX: number): KeeperState {
 export function keeperSaves(crossX: number, crossY: number, keeperX: number): boolean {
   if (crossY > KEEPER.reachHeight) return false
   return Math.abs(crossX - keeperX) <= KEEPER.reach
+}
+
+/**
+ * The ball after a save: knocked up and back from the keeper's own plane.
+ *
+ * The verdict is settled at the goal line, which is `KEEPER.standOff` behind
+ * him, so a rebound launched from the crossing point starts *inside the net*
+ * and the save looks like the ball passing through him. Putting the contact
+ * where his hands are is what makes it read as a punch.
+ */
+export function punchClear(ball: BallState, crossX: number, crossY: number): BallState {
+  return {
+    p: {
+      x: crossX,
+      y: Math.max(crossY, PITCH.groundY + PITCH.ballRadius),
+      z: PITCH.goalZ + KEEPER.standOff,
+    },
+    v: {
+      x: ball.v.x,
+      y: Math.abs(ball.v.y) * 0.4 + 2,
+      z: Math.abs(ball.v.z) * 0.45,
+    },
+    spin: 0,
+    resting: false,
+  }
 }
